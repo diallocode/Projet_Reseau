@@ -57,6 +57,7 @@ class NetworkManager:
             self.socket.sendto(data, self.c_address)
         except Exception as e:
             print(f"Erreur envoi : {e}")
+            
     def get_messages(self):
         """
         Dépile et retourne tous les messages actuellement dans la file d'attente.

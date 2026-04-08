@@ -87,4 +87,4 @@ class ScenarioMaker:
     
 
     def get_data(self):
-        return {"general": self.general1, "my_units": self.all_units}
+        return {"general": self.general, "my_units": self.all_units}
