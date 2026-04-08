@@ -1,5 +1,4 @@
 from Constant import ROWS, COLS, VIEW_ELEVATION
-from model import NetworkManager
 from util.ScenarioMaker import ScenarioMaker
 from model.Battlefield import Battlefield
 from model.Battle import Battle
@@ -10,7 +9,7 @@ from scenario.ScenarioDataPlotter import PlotLanchester
 from battle_tournament.TournamentManager import run_tournament
 from util.Functions import parse_units_list, parse_range, get_scenario, create_parser, generate_heightmap
 from util.SaveManager import SaveManager
-
+from Network.NetworkManager import NetworkManager
 
 if __name__ == '__main__':
     parser = create_parser()
@@ -21,17 +20,17 @@ if __name__ == '__main__':
         print("Initialisation du pont réseau IPC...")
         
         # Le jeu se met en pause ici jusqu'à recevoir l'ID
-        network_manager = NetworkManager(port=5000) 
+        network_manager = NetworkManager() 
         player_id = network_manager.my_player_id
         
-        print(f"Running battle with {args.AI1} Strategy as Player {player_id}")
+        print(f"Running battle with {args.AI} Strategy as Player {player_id}")
 
         # On passe le fameux player_id au ScenarioMaker !
-        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI1, "Player" + str(player_id))
+        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI, "Player" + str(player_id))
         data = scenario_maker.get_data()
 
-        general1 = data.get("general1")
-        all_units = data.get("all_units")
+        general1 = data.get("general")
+        all_units = data.get("my_units")
 
         battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
 

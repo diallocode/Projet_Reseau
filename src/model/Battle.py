@@ -1,4 +1,4 @@
-from Network.Network import NetworkManager
+from Network.NetworkManager import NetworkManager
 from model.General import General
 from view.View import View
 from model.Battlefield import Battlefield
@@ -11,8 +11,6 @@ import webbrowser # For automatic web page
 from view.Console import Console
 from view.GUI import GUI
 import time
-
-
 
 
 class Battle:

@@ -4,7 +4,7 @@ import time
 
 # Utilise les mêmes constantes que ton projet
 HOST = "127.0.0.1"
-PORT = 5000 
+PORT = 7000 
 
 def start_mock_c():
     # Création du socket UDP

@@ -1,7 +1,6 @@
 import math
 import random
 from Constant import UNIT_RADIUS
-from util.UnitsFactory import UnitsFactory
 
 
 class Battlefield:
@@ -263,7 +262,8 @@ class Battlefield:
         """
         player_id = data["player_id"]
         remote_units = data["units"]
-        
+        from util.UnitsFactory import UnitsFactory
+
         factory = UnitsFactory()
 
         for u_data in remote_units:
