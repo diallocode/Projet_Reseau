@@ -1,5 +1,0 @@
-Unit,HP,Type_Attack,Attack,Armor,Pierce_Armor,Range,Line_of_Sight,Speed,Attack_Delay,Reload_Time,Accuracy
-Crossbowman,35,Pierce,5,0,0,5,7,0.96,0.35,2,0.85
-Pikeman,55,Melee,4,0,0,0.01,4,1,0,3,1
-Knight,100,Melee,10,2,2,0.01,4,1.35,0.67,1.8,1
-Swordsman,60,Melee,9,1,1,0.01,4,0.9,0,2,1
