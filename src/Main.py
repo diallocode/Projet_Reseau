@@ -9,34 +9,39 @@ from scenario.ScenarioDataPlotter import PlotLanchester
 from battle_tournament.TournamentManager import run_tournament
 from util.Functions import parse_units_list, parse_range, get_scenario, create_parser, generate_heightmap
 from util.SaveManager import SaveManager
-
+from Network.NetworkManager import NetworkManager
 
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
     if args.command == 'run':
-        print(f"Running battle between {args.AI1} and {args.AI2}")
 
-        scenario_maker = ScenarioMaker(get_scenario(), args.AI1, args.AI2)
+        print("Initialisation du pont réseau IPC...")
+        
+        # Le jeu se met en pause ici jusqu'à recevoir l'ID
+        network_manager = NetworkManager() 
+        player_id = network_manager.my_player_id
+        
+        print(f"Running battle with {args.AI} Strategy as Player {player_id}")
+
+        # On passe le fameux player_id au ScenarioMaker !
+        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI, "Player" + str(player_id))
         data = scenario_maker.get_data()
 
-        general1 = data.get("general1")
-        general2 = data.get("general2")
-        all_units = data.get("all_units")
-
+        general1 = data.get("general")
+        all_units = data.get("my_units")
 
         battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
 
+        # Initialisation de la vue (Console ou GUI)
         if args.terminal:
             view = Console(battlefield)
         else:
-            view = GUI(battlefield, [general1, general2], VIEW_ELEVATION)
+            view = GUI(battlefield, [general1], VIEW_ELEVATION)
 
-        if args.datafile:
-            battle = Battle(general1, general2, battlefield, view, args.datafile)
-        else:
-            battle = Battle(general1, general2, battlefield, view)
+        # On passe le network_manager à la Battle pour qu'elle puisse lire les messages
+        battle = Battle(general1, None, battlefield, view, network_manager)
 
         if args.plot:
             battle.collectStats = True
@@ -73,4 +78,3 @@ if __name__ == '__main__':
 
         plotter = eval(args.plotter)
         plotter(data)
-
