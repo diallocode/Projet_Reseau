@@ -174,12 +174,12 @@ class Battlefield:
         return not unit.is_alive()
 
     # More nested list paths general->army->units
-    def update(self, dt):
+    def update(self,general, dt):
         """
         Met à jour toutes les unités directement depuis le dictionnaire.
         """
         # List of units for random mixing
-        all_units = list(self.troupes.values())
+        all_units = general.get_my_units(self)
         random.shuffle(all_units)
 
         ids_to_remove = []
@@ -280,7 +280,7 @@ class Battlefield:
             new_unit.battlefield = self
             
             # Ajout au champ de bataille (risque de collision)
-            self.battlefield.troupes[unit_id] = new_unit
+            self.troupes[unit_id] = new_unit
             
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
         

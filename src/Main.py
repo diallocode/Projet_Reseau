@@ -26,7 +26,7 @@ if __name__ == '__main__':
         print(f"Running battle with {args.AI} Strategy as Player {player_id}")
 
         # On passe le fameux player_id au ScenarioMaker !
-        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI, "Player" + str(player_id))
+        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI)
         data = scenario_maker.get_data()
 
         general1 = data.get("general")
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             view = GUI(battlefield, [general1], VIEW_ELEVATION)
 
         # On passe le network_manager à la Battle pour qu'elle puisse lire les messages
-        battle = Battle(general1, None, battlefield, view, network_manager)
+        battle = Battle(general1, battlefield, network_manager, view)
 
         if args.plot:
             battle.collectStats = True
