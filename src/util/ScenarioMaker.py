@@ -4,116 +4,101 @@ from util.UnitsFactory import UnitsFactory
 from util.Functions import create_strategy
 
 class ScenarioMaker:
-    def __init__(self, scenario, ia1Name, ia2Name):
+    
+    """
+    Prépare le terrain pour UN participant dans une bataille P2P.
+    
+    Chaque joueur instancie son propre ScenarioMaker avec :
+    - son player_id (0, 1, 2...) qui détermine son bloc d'IDs et sa zone de spawn
+    - son nom et sa stratégie IA
+    - le scénario commun partagé par tous les participants
+    """
+
+    ID_BLOCK_SIZE = 1000  # Cohérent avec Battlefield.get_enemy_units()
+
+    def __init__(self, scenario, player_id, ia_name, player_name=None):
         self.scenario = scenario
-        self.ia1Name = ia1Name
-        self.ia2Name = ia2Name
+        self.player_id = player_id          # 0, 1, 2, 3...
+        self.ia_name = ia_name
+        self.player_name = player_name or f"General {player_id + 1}"
 
         self.units_factory = UnitsFactory()
-        self.all_units = {}
-        self.positions1 = {}
-        self.positions2 = {}
+        self.my_units = {}
+        self.my_positions = {}
 
         self.create_positions()
         self.create_units()
-        self.general1, self.general2 = self.create_generals()
+        self.general = self.create_general()
 
     def create_positions(self):
+        """
+        Calcule la zone de spawn du joueur selon son player_id.
+        Chaque armée occupe une colonne de départ décalée.
+        """
         start_line = self.scenario["startLine"]
-        start_col = self.scenario["startCol"]
         unit_per_col = self.scenario["unitPerCol"]
         army_distance = self.scenario["armyDistance"]
-
-        # Order of units (from rear to front)
-        # Army 1 will have its Knights at the front (to the right of its block).
-        # Army 2 will have its Knights at the front (to the left of its block).
         unit_order = ["Crossbowman", "Pikeman", "Knight"]
 
-        self.positions1 = {}
-        self.positions2 = {}
+        # Calcul de la largeur d'une armée
+        army_width = sum(
+            ceil(self.scenario.get(ut, 0) / unit_per_col)
+            for ut in unit_order
+            if self.scenario.get(ut, 0) > 0
+        )
 
-        # =========================================================
-        # 1. CALCULATING THE WIDTH OF THE ARMY 1
-        # =========================================================
-        total_cols_army1 = 0
-        for unit_type in unit_order:
-            nb = self.scenario.get(unit_type, 0)
-            if nb > 0:
-                total_cols_army1 += ceil(nb / unit_per_col)
+        # Chaque joueur est décalé de (army_width + army_distance) * player_id
+        start_col = self.scenario["startCol"] + self.player_id * (army_width + army_distance)
 
-        # =========================================================
-        # 2. ARMED POSITION 1 (Towards the right)
-        # =========================================================
-        current_col_1 = start_col
+        current_col = start_col
         for unit_type in unit_order:
             nb_units = self.scenario.get(unit_type, 0)
-            if nb_units <= 0: continue
-            
-            self.positions1[unit_type] = []
-            nb_cols = ceil(nb_units / unit_per_col)
-            unit_idx = 0
-            
-            for c in range(nb_cols):
-                col = current_col_1 + c
-                for r in range(unit_per_col):
-                    if unit_idx < nb_units:
-                        self.positions1[unit_type].append((start_line + r, col))
-                        unit_idx += 1
-            current_col_1 += nb_cols
+            if nb_units <= 0:
+                continue
 
-        # =========================================================
-        # 3. ARMED POSITION 2 (Mirror, to the right)
-        # =========================================================
-        # The starting point is: beginning of army 1 + its width + the empty space
-        start_col_army2 = start_col + total_cols_army1 + army_distance
-        
-        # For the mirror effect, army 2 must have its front on the LEFT of its block.
-        # We therefore reverse the order of placement (Knight first to face Knight 1).
-        mirror_order = list(reversed(unit_order)) 
-        
-        current_col_2 = start_col_army2
-        for unit_type in mirror_order:
-            nb_units = self.scenario.get(unit_type, 0)
-            if nb_units <= 0: continue
-            
-            self.positions2[unit_type] = []
+            self.my_positions[unit_type] = []
             nb_cols = ceil(nb_units / unit_per_col)
             unit_idx = 0
-            
+
             for c in range(nb_cols):
-                # We are expanding to the right (+c)
-                col = current_col_2 + c
+                col = current_col + c
                 for r in range(unit_per_col):
                     if unit_idx < nb_units:
-                        self.positions2[unit_type].append((start_line + r, col))
+                        self.my_positions[unit_type].append((start_line + r, col))
                         unit_idx += 1
-            current_col_2 += nb_cols
+            current_col += nb_cols
 
     def create_units(self):
-        # Using a set to avoid duplicate technical keys
-        unit_keys = ["Crossbowman", "Pikeman", "Knight"]
+        """
+        Instancie uniquement les unités de CE joueur.
+        Les IDs sont dans le bloc [player_id * 1000, (player_id+1) * 1000[
+        """
+        base_id = self.player_id * self.ID_BLOCK_SIZE
         unit_id = 0
 
-        for unit_type in unit_keys:
-            # Army 1
-            for pos in self.positions1.get(unit_type, []):
-                u1 = self.units_factory.create_unit(unit_id, unit_type)
-                u1.position = pos
-                self.all_units[unit_id] = u1
+        for unit_type in ["Crossbowman", "Pikeman", "Knight"]:
+            for pos in self.my_positions.get(unit_type, []):
+                uid = base_id + unit_id
+                unit = self.units_factory.create_unit(uid, unit_type)
+                unit.position = pos
+                self.my_units[uid] = unit
                 unit_id += 1
 
-            # Army 2 (An ID offset is used for clarity.)
-            for pos in self.positions2.get(unit_type, []):
-                id_2 = unit_id + 1000
-                u2 = self.units_factory.create_unit(id_2, unit_type)
-                u2.position = pos
-                self.all_units[id_2] = u2
-                unit_id += 1
-
-    def create_generals(self):
-        strat1 = create_strategy(self.ia1Name)
-        strat2 = create_strategy(self.ia2Name)
-        return General("General 1", 1, strat1), General("General 2", 2, strat2)
+    def create_general(self):
+        """
+        Crée le général de CE joueur avec sa stratégie IA.
+        general_id = player_id + 1 (cohérent avec l'ancien système : 1 → bloc 0-999)
+        """
+        strategy = create_strategy(self.ia_name)
+        return General(self.player_name, self.player_id + 1, strategy)
 
     def get_data(self):
-        return {"general1": self.general1, "general2": self.general2, "all_units": self.all_units}
+        """
+        Retourne les données de CE joueur uniquement.
+        Le Battlefield sera alimenté par les unités distantes via le réseau.
+        """
+        return {
+            "general": self.general,
+            "my_units": self.my_units,
+            "player_id": self.player_id,
+        }

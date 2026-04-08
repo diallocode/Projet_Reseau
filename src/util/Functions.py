@@ -87,14 +87,13 @@ def create_parser():
 
     run_p = subparsers.add_parser('run', help='Run a battle between two AIs')
 
-    run_p.add_argument('AI1', help='First AI name')
-    run_p.add_argument('AI2', help='Second AI name')
+    run_p.add_argument('AI', help='Your AI strategy name')
+    run_p.add_argument('--player-id', type=int, default=0, help='Your player ID (0, 1, 2...)')
+    run_p.add_argument('--player-name', type=str, default=None, help='Your display name (optional)')
     run_p.add_argument('-t', '--terminal', action='store_true', help='Display output in terminal')
     run_p.add_argument('-d', '--datafile', help='Where to write data from that battle')
     run_p.add_argument('-p', '--plot', action='store_true', help='Plot unit number evolution at the end')
-
-
-
+    
     load_p = subparsers.add_parser('load', help='Load a battle from a data file')
     load_p.add_argument('savefile', help='Path to data file')
     load_p.add_argument('-g', '--gui', action='store_true', help='Display GUI when loading the save')

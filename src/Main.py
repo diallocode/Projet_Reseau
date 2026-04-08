@@ -12,64 +12,37 @@ from util.SaveManager import SaveManager
 
 
 if __name__ == '__main__':
+
     parser = create_parser()
     args = parser.parse_args()
+
 
     if args.command == 'run':
         print(f"Running battle between {args.AI1} and {args.AI2}")
 
-        scenario_maker = ScenarioMaker(get_scenario(), args.AI1, args.AI2)
-        data = scenario_maker.get_data()
+        print(f"Player {args.player_id} — choose your army:")
+        scenario = get_scenario()  # Chaque joueur tape son propre dict
 
-        general1 = data.get("general1")
-        general2 = data.get("general2")
-        all_units = data.get("all_units")
+        maker = ScenarioMaker(scenario, args.player_id, args.AI)
+        data = maker.get_data()
 
+        general = data["general"]
+        my_units = data["my_units"]
 
-        battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
+        battlefield = Battlefield(COLS, ROWS, my_units, generate_heightmap(COLS, ROWS))
 
         if args.terminal:
             view = Console(battlefield)
         else:
-            view = GUI(battlefield, [general1, general2], VIEW_ELEVATION)
+            view = GUI(battlefield, [general], VIEW_ELEVATION)
 
         if args.datafile:
-            battle = Battle(general1, general2, battlefield, view, args.datafile)
+            battle = Battle(general, battlefield, view, args.datafile)
         else:
-            battle = Battle(general1, general2, battlefield, view)
+            battle = Battle(general, battlefield, view)
 
         if args.plot:
+
             battle.collectStats = True
 
         battle.start()
-
-
-    if args.command == 'load':
-        view_factory = (lambda bf: GUI(bf)) if args.gui else None
-        battle = SaveManager.load_battle(args.savefile, view_factory=view_factory)
-        battle.start()
-
-    if args.command == 'tourney':
-        print(f"Running tournament with AIs: {args.G}, scenarios: {args.scenarios}, rounds: {args.rounds}")
-        run_tournament(args) # Call run_tournament function
-
-    if args.command == 'plot':
-
-        units_type = parse_units_list(args.units_type)
-
-        ranges = parse_range(args.ranges)
-
-        print("Automated scenario start with parameters:\n")
-        print(f"AI: {args.AI} plotter={args.plotter} scenario={args.scenario}\n")
-        print(f"units_type={units_type} range={ranges} rounds={args.rounds}\n")
-        print("Running..........................................................")
-
-
-        data = {}
-        for unit_type in units_type:
-            for n in ranges:
-                scenario = eval(args.scenario)
-                data[unit_type, n] = scenario(unit_type, n, args.AI).run()
-
-        plotter = eval(args.plotter)
-        plotter(data)
