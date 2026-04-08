@@ -27,7 +27,7 @@ class NetworkManager:
     def wait_initialization(self):
         print("En attente du processus C pour recevoir l'ID...")
         # On envoie un petit "Hello" au C pour qu'il connaisse notre port
-        self.send_to_c({"type": "hello"})
+        #self.send_to_c({"type": "hello"})
         
         # On attend la réponse (Buffer de 65k pour être large)
         data, _ = self.socket.recvfrom(65535)
