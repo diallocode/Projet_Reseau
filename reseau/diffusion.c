@@ -46,7 +46,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp){
         if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)dest_addr, sizeof(dest_addr)) < 0){
             printf("erreur-sendto");
         }
-        dest_addr = dest_addr->suivant; // avancement
+        //dest_addr = dest_addr->suivant; // avancement
     }
     
     /*Gestion de la file d'attente*/
