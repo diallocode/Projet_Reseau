@@ -31,17 +31,11 @@ class Unit(ABC):
     accuracy: float                 # Probability of successful hit
     position: tuple[float, float]   # (x, y)
 
-    # --- NOUVEAUX ATTRIBUTS RÉSEAU ---
-    # network_owner correspond à l'ID de l'IA qui gère l'unité (0=Environnement, 1=Moi, 2=Adversaire 1, etc.)
-    network_owner: int = 1 
-    # network_locked empêche l'unité de bouger pendant qu'on demande sa propriété au réseau
-    network_locked: bool = False
-
-
     current_order: str = None       # "move" or "attack"
     target_unit: "Unit" = None
     target_pos: tuple[float, float] = None
     battlefield:Battlefield = None
+    
     last_attacker: "Unit" = None    # Unit that last attacked this unit (for Braindead strategy)
 
     # ------------------------------------------------------------------
@@ -61,16 +55,6 @@ class Unit(ABC):
             self.current_order = None
             self.target_unit = None
             self.target_pos = None
-            
-        # --- NOUVEAU : On signale les dégâts ---
-        # Remarque: C'est généralement celui qui SUBIT (si c'est nous) 
-        # ou l'attaquant qui notifie. Restons simples pour la V1 "best-effort" :
-        if self.battlefield:
-            self.battlefield.push_network_event({
-                "type": "damage",
-                "id": self.id,
-                "hp": self.hp
-            })
 
     def set_order(self, order_type: str, target=None, target_pos=None):
         """Assign a new 'move' or 'attack' command with associated targets."""
@@ -85,16 +69,8 @@ class Unit(ABC):
     # ------------------------------------------------------------------
     # UPDATE LOOP
     # ------------------------------------------------------------------
-    def update(self, dt, my_player_id: int):
+    def update(self, dt):
         """Advance unit logic (cooldowns, movement, or combat) based on elapsed time."""
-        
-        # --- LE BOUCLIER RÉSEAU ---
-        # Si l'unité est verrouillée ou qu'elle appartient à un joueur distant,
-        # je ne calcule ni sa physique, ni ses actions IA sur ma machine locale.
-        # C'est le réseau qui m'enverra sa nouvelle position et ses HP.
-        if self.network_locked or self.network_owner != MY_NETWORK_ID:
-            return
-
         if not self.is_alive():
             return
 
@@ -104,15 +80,15 @@ class Unit(ABC):
 
         # Order execution
         if self.current_order == "move":
-            self._update_move(dt, my_player_id)
+            self._update_move(dt)
 
         elif self.current_order == "attack":
-            self._update_attack(dt, my_player_id)
+            self._update_attack(dt)
 
     # ------------------------------------------------------------------
     # MOVEMENT
     # ------------------------------------------------------------------
-    def _update_move(self, dt, my_player_id):
+    def _update_move(self, dt):
         """
         Execute movement toward target_pos.
         Includes slope speed penalties and basic lateral obstacle avoidance.
@@ -160,7 +136,7 @@ class Unit(ABC):
         new_pos = (new_x, new_y)
 
                 # Tentative directe
-        if self._try_move(new_pos, my_player_id):
+        if self._try_move(new_pos):
             return
 
         # === Lateral avoidance ===
@@ -177,7 +153,7 @@ class Unit(ABC):
             y + perp_y * side_step
         )
 
-        if self._try_move(left_pos, my_player_id):
+        if self._try_move(left_pos):
             return
 
         # Right
@@ -186,10 +162,10 @@ class Unit(ABC):
             y - perp_y * side_step
         )
 
-        if self._try_move(right_pos, my_player_id):
+        if self._try_move(right_pos):
             return
 
-    def _try_move(self, new_pos, my_player_id):
+    def _try_move(self, new_pos):
         """
         Applique le mouvement si la position est valide et libre.
         """
@@ -208,15 +184,6 @@ class Unit(ABC):
             return False # We stop no matter what (ally or enemy)
             
         self.position = new_pos
-
-        # --- NOUVEAU : On signale le changement au réseau ---
-        if self.network_owner == my_player_id:
-            self.battlefield.push_network_event({
-                "type": "move",
-                "id": self.id, # N'oublie pas : c'est déjà l'ID global (ex: 1005)
-                "x": new_pos[0],
-                "y": new_pos[1]
-            })
         return True
 
     def is_enemy(self, other: "Unit") -> bool:
