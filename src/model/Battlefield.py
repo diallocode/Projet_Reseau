@@ -37,8 +37,6 @@ class Battlefield:
         self.heightmap = heightmap
         self.create_troupe(troupes)
 
-        self.outgoing_network_events = [] # Notre boîte d'envoi
-
 
 
     # ==========================================================
@@ -236,59 +234,3 @@ class Battlefield:
             if math.hypot(dx, dy) < UNIT_RADIUS*2:
                 return False
         return True
-
-    def _handle_new_player(self, data):
-        """
-        Intègre l'armée d'un nouvel arrivant sur la carte locale en évitant les collisions d'ID.
-        """
-        player_id = data["player_id"] # Fourni par ton composant C (ex: 2)
-        remote_units = data["units"]
-        
-        from util.UnitsFactory import UnitsFactory
-        factory = UnitsFactory()
-
-        for u_data in remote_units:
-            original_id = u_data["id"]
-            unit_type = u_data["type"]
-            
-            # --- LA MAGIE EST ICI : Recalcul de l'ID ---
-            # Si le joueur est le n°2, l'ID 5 devient 2005.
-            global_unit_id = (player_id * 1000) + original_id
-            
-            # 1. Création de l'unité avec le NOUVEL ID
-            new_unit = factory.create_unit(global_unit_id, unit_type)
-            
-            # 2. Forçage de l'état réseau
-            new_unit.position = (u_data["x"], u_data["y"])
-            new_unit.hp = u_data["hp"]
-            new_unit.network_owner = player_id 
-            
-            # 3. Ajout au champ de bataille sans écraser tes propres unités
-            self.troupes[global_unit_id] = new_unit
-            
-        print(f"L'armée du joueur {player_id} a été intégrée avec les IDs {player_id * 1000}+")
-
-        # ... autres messages ...
-
-    # Nouvelle méthode dans Battle.py
-    def _handle_disconnect(self, data):
-        """
-        Nettoie le champ de bataille lorsqu'un joueur se déconnecte.
-        """
-        player_id = data["player_id"]
-        
-        # 1. On liste tous les IDs des unités appartenant à ce joueur
-        # (On peut utiliser network_owner ou la division par 1000)
-        ids_to_remove = [
-            uid for uid, unit in self.troupes.items() 
-            if getattr(unit, 'network_owner', -1) == player_id
-        ]
-        
-        # 2. On utilise ta méthode existante pour les retirer proprement
-        for uid in ids_to_remove:
-            self.remove_unit(uid)
-            
-        print(f"Le Joueur {player_id} s'est retiré ! {len(ids_to_remove)} unités ont fui le champ de bataille.")
-
-    def push_network_event(self, event_data):
-        self.outgoing_network_events.append(event_data)

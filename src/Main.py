@@ -1,5 +1,4 @@
 from Constant import ROWS, COLS, VIEW_ELEVATION
-from model import NetworkManager
 from util.ScenarioMaker import ScenarioMaker
 from model.Battlefield import Battlefield
 from model.Battle import Battle
@@ -17,33 +16,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.command == 'run':
+        print(f"Running battle between {args.AI1} and {args.AI2}")
 
-        print("Initialisation du pont réseau IPC...")
-        
-        # 1. Le jeu se met en pause ici jusqu'à recevoir l'ID
-        network_manager = NetworkManager(port=5000) 
-        player_id = network_manager.my_player_id
-        
-        print(f"Running battle with {args.AI1} Strategy as Player {player_id}")
-
-        # 2. On passe le fameux player_id au ScenarioMaker !
-        scenario_maker = ScenarioMaker(get_scenario(), args.AI1, player_id)
+        scenario_maker = ScenarioMaker(get_scenario(), args.AI1, args.AI2)
         data = scenario_maker.get_data()
 
         general1 = data.get("general1")
+        general2 = data.get("general2")
         all_units = data.get("all_units")
+
 
         battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
 
-        # 3. Initialisation de la vue (Console ou GUI)
         if args.terminal:
             view = Console(battlefield)
         else:
-            # Note : Tu pourras adapter les généraux à afficher
-            view = GUI(battlefield, [general1], VIEW_ELEVATION)
+            view = GUI(battlefield, [general1, general2], VIEW_ELEVATION)
 
-        # 4. On passe le network_manager à la Battle pour qu'elle puisse lire les messages
-        battle = Battle(general1, None, battlefield, view, network_manager)
+        if args.datafile:
+            battle = Battle(general1, general2, battlefield, view, args.datafile)
+        else:
+            battle = Battle(general1, general2, battlefield, view)
 
         if args.plot:
             battle.collectStats = True
