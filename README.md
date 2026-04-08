@@ -54,3 +54,5 @@ python3 Main.py plot <AI> <PLOTTER> <SCENARIO> "[UnitType,...]" "<RangeExpressio
 python3 Main.py plot Daft PlotLanchester Lanchester "[Knight, Pikeman]" "range(1,100)"
 
 ```
+####
+Suite du projet
