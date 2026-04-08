@@ -37,6 +37,10 @@ class Unit(ABC):
     battlefield:Battlefield = None
     
     last_attacker: "Unit" = None    # Unit that last attacked this unit (for Braindead strategy)
+    
+    # --- NOUVEAUX ATTRIBUTS RÉSEAU ---
+    network_owner: int = 0
+    network_locked: bool = False
 
     # ------------------------------------------------------------------
     # CORE STATUS & UTILITY
@@ -55,6 +59,17 @@ class Unit(ABC):
             self.current_order = None
             self.target_unit = None
             self.target_pos = None
+        
+        # --- NOUVEAU : On signale les dégâts ---
+        if self.battlefield:
+            self.battlefield.push_network_event({
+                "type": "update",
+                "id": self.id,
+                "hp": self.hp,
+                "network_owner": self.network_owner,
+                "x": self.position[0],
+                "y": self.position[1]
+            })
 
     def set_order(self, order_type: str, target=None, target_pos=None):
         """Assign a new 'move' or 'attack' command with associated targets."""
@@ -71,6 +86,9 @@ class Unit(ABC):
     # ------------------------------------------------------------------
     def update(self, dt):
         """Advance unit logic (cooldowns, movement, or combat) based on elapsed time."""
+        
+        #if self.network_locked or self.network_owner != my_player_id:
+        #    return
         if not self.is_alive():
             return
 
@@ -184,6 +202,16 @@ class Unit(ABC):
             return False # We stop no matter what (ally or enemy)
             
         self.position = new_pos
+        
+        if self.battlefield:
+            self.battlefield.push_network_event({
+                "type": "update",
+                "id": self.id,
+                "hp": self.hp,
+                "network_owner": self.network_owner,
+                "x": self.position[0],
+                "y": self.position[1]
+            })
         return True
 
     def is_enemy(self, other: "Unit") -> bool:
