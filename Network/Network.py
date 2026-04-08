@@ -27,7 +27,7 @@ class NetworkManager:
     def wait_initialization(self):
         print("En attente du processus C pour recevoir l'ID...")
         # On envoie un petit "Hello" au C pour qu'il connaisse notre port
-        #self.send_to_c({"type": "hello"})
+        self.send_to_c({"type": "hello"})
         
         # On attend la réponse (Buffer de 65k pour être large)
         data, _ = self.socket.recvfrom(65535)
@@ -57,3 +57,19 @@ class NetworkManager:
             self.socket.sendto(data, self.c_address)
         except Exception as e:
             print(f"Erreur envoi : {e}")
+    def get_messages(self):
+        """
+        Dépile et retourne tous les messages actuellement dans la file d'attente.
+        C'est une méthode non-bloquante.
+        """
+        messages = []
+        # Tant que la file n'est pas vide, on retire le message le plus ancien
+        while not self.message_queue.empty():
+            try:
+                # get_nowait() retire l'élément sans bloquer le programme
+                msg = self.message_queue.get_nowait()
+                messages.append(msg)
+            except queue.Empty:
+                break
+
+        return messages
