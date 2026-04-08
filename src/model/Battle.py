@@ -28,12 +28,13 @@ class Battle:
     """
 
 
-    def __init__(self, general1: General, battlefield: Battlefield, view:View = None, datafile: str = None):
+    def __init__(self, general1: General, general2: General, battlefield: Battlefield, view:View = None, datafile: str = None):
         """
         Initializes the battle environment, participants, and optional logger/view.
         """
         self.battlefield = battlefield
         self.general1 = general1
+        self.general2 = general2
         self.winner = None
         self.paused = False
         self.collectStats = False
@@ -52,7 +53,6 @@ class Battle:
             self.speed = HEADLESS_SPEEDUP
         else:  
             self.speed = 1
-        self.network_manager: NetworkManager = None # Placeholder for future IPC integration
 
     # ===================================================================
     #                           MAIN SIMULATION
@@ -106,17 +106,6 @@ class Battle:
                 # Without view mode
                 dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode
 
-            for msg in self.network_manager.get_messages():
-                if msg["type"] == "handshake":
-                    self.battlefield._handle_new_player(msg)
-                elif msg["type"] == "update":
-                    self.battlefield._handle_unit_update(msg)
-                elif msg["type"] == "player_disconnected":
-                    self.battlefield._handle_disconnect(msg)
-            #while not self.ipc_queue.empty():
-            #    network_message = self.ipc_queue.get()
-            #    self._apply_network_update(network_message) # Met à jour la position, les HP, ou la propriété
-           
             self.handle_event()
             if self._queued_battle is not None:
                 self._apply_loaded_battle(self._queued_battle)
@@ -130,15 +119,11 @@ class Battle:
                     if self.logger:
                         self.logger.log_info_from_general(self.general1, self.battlefield)
 
-                    self.battlefield.update(dt)
+                    self.general2.play(self.battlefield)
+                    if self.logger:
+                        self.logger.log_info_from_general(self.general2, self.battlefield)
 
-                    # --- EXPÉDITION VERS LE RÉSEAU ---
-                    if self.battlefield.outgoing_network_events:
-                        for event in self.battlefield.outgoing_network_events:
-                            # self.network_manager.send_to_c(event)
-                            pass
-                        # On vide la boîte d'envoi pour la prochaine frame !
-                        self.battlefield.outgoing_network_events.clear()
+                    self.battlefield.update(dt)
 
                 if self.general1.is_defeated(self.battlefield):
                     self.winner = self.general2
