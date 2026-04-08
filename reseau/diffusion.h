@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 
 // Cette directive magique empêche le compilateur C de rajouter des octets 
