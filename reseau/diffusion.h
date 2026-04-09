@@ -23,7 +23,7 @@
 // Structure qui va envelopper le paquet a envoyer
 typedef struct
 {
-    uint8_t id_expediteur;     // L'identifiant du joueur
+    uint32_t id_expediteur;     // L'identifiant du joueur
     uint8_t type_message;      // Le type du message 
     uint32_t num_sequence;     // Le numero de suivie 
     uint16_t taille_payload;   // La taille des donnees JSON, pour lire le json (2 octets)
