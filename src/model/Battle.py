@@ -71,6 +71,7 @@ class Battle:
                if msg["type"] == "handshake":
                    print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
                    self.battlefield._handle_new_player(msg)
+                   #exit() # Debug: Stop after handshake to verify correctness
                elif msg["type"] == "update":
                    print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                    self.battlefield._handle_unit_update(msg)
@@ -88,6 +89,7 @@ class Battle:
                    # --- EXPÉDITION VERS LE RÉSEAU ---
                    if self.battlefield.outgoing_network_events:
                        for event in self.battlefield.outgoing_network_events:
+                           print(f"Envoi d'un événement réseau : {event}")
                            self.network_manager.send_to_c(event)
                       
                        # On vide la boîte d'envoi pour la prochaine frame !

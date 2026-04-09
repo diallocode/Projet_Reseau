@@ -125,20 +125,19 @@ class Battlefield:
         for target_id, target_unit in self.troupes.items():
             if not target_unit.is_alive():
                 continue
+            
+            if target_unit.id // 1000 == my_owner:
+                continue  # Skip units from the same player
 
-            target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
-
-            # On ne s'attaque pas soi-même (même propriétaire)
-            if my_owner == target_owner:
-                continue
+            #target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
 
             # Résolution diplomatique
             # Par défaut, dans un jeu de guerre sauvage, les inconnus sont des ennemis
             relationship = "enemy" 
             
             # Si on a défini une relation spécifique avec ce joueur, on l'applique
-            if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
-                relationship = self.diplomacy[my_owner][target_owner]
+            #if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
+            #    relationship = self.diplomacy[my_owner][target_owner]
 
             # Si c'est bien un ennemi, on l'ajoute à la liste des cibles
             if relationship == "enemy":
@@ -168,6 +167,7 @@ class Battlefield:
     def _update_single_unit(self, unit, dt):
         if not unit.is_alive():
             return True
+        print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
         unit.update(dt)
         if unit.position:
             unit.position = self.clamp_position(unit.position)
@@ -180,7 +180,6 @@ class Battlefield:
         """
         # List of units for random mixing
         all_units = general.get_my_units(self)
-        random.shuffle(all_units)
 
         ids_to_remove = []
         for unit in all_units:
@@ -272,15 +271,18 @@ class Battlefield:
             
             # Création de l'unité
             new_unit = factory.create_unit(unit_id, unit_type)
+            print(f"Création de l'unité {unit_id} de type {unit_type} pour le joueur {player_id}")
             
             # Forçage de l'état réseau
             new_unit.position = (u_data["x"], u_data["y"])
             new_unit.hp = u_data["hp"]
             new_unit.network_owner = player_id 
             new_unit.battlefield = self
+            print(f"New ")
             
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
             
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
         
@@ -338,4 +340,5 @@ class Battlefield:
             self.remove_unit(unit_id)
     
     def push_network_event(self, event_data):
+        print(f"Préparation d'un événement réseau : {event_data}")
         self.outgoing_network_events.append(event_data)
