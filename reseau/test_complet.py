@@ -30,7 +30,7 @@ sock_reseau = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock_python = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock_python.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock_python.bind(("127.0.0.1", 5003))
-sock_python.settimeout(2.0)
+sock_python.settimeout(5.0)
 
 # =====================
 # THREAD : écoute Python en arrière-plan
