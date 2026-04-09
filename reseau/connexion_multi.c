@@ -64,7 +64,7 @@ int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out) 
             if (addr_out != NULL) {
                 *addr_out = paire_connected[i].addr;
             }
-            return 0;
+            return paire_connected[i].id;
         }
     }
     return -1; // Personne n'est inactif

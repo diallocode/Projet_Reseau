@@ -383,7 +383,7 @@ void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti) {
 
 
 
-
 void set_mon_id(uint8_t id) {
     mon_id_joueur = id;
 }
+

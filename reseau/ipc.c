@@ -108,19 +108,26 @@ int main() {
             break;
         }
 
+        
+
         // Python -> Reseau
         if (FD_ISSET(sock, &fds)) {
             int n = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&python_addr, &python_addr_len);
             if (n > 0) {
                 buffer[n] = '\0';
                 printf("[PYTHON] Reçu : %s\n", buffer);
-                //Parser le json reçu et traiter 
 
                 uint8_t type_message = obtenir_type_message(buffer);
-                diffusion_message_sens1(buffer, reseau_fd, type_message); // appel de la fonction
-        
-                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-    
+
+                if (type_message == 3) {
+                    // C'est un "connect" → lancer la recherche d'ID
+                    printf("[CONNECT] Lancement de la recherche d'ID...\n");
+                    demarrer_recherche_id(reseau_fd);
+                } else {
+                    // Tous les autres messages → diffusion normale
+                    diffusion_message_sens1(buffer, reseau_fd, type_message);
+                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                }
             }
         }
 
@@ -142,13 +149,25 @@ int main() {
             free(json_propre);
         }
 
-        verifier_retransmissions(reseau_fd); // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
+        verifier_retransmissions(reseau_fd);
+
+        // Vérifier si la recherche d'ID est terminée
+        int nouvel_id = verifier_fin_recherche_id();
+        if (nouvel_id != -1) {
+            char json_connected[64];
+            sprintf(json_connected, "{\"type\":\"connected\",\"player_id\":%d}", nouvel_id);
+            sendto(sock, json_connected, strlen(json_connected), 0,
+                (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+            printf("[CONNECT] ID attribué : %d → envoyé à Python\n", nouvel_id);
+        } // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
 
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
         int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
         if (id_deconnecte != -1) {
             printf("[ALERTE] Le joueur ID %d déconnecté pour inactivité.\n", id_deconnecte);
+
+            disconnect_paire_by_addr(addr_fantome);
 
             // Nettoyer la file d'attente 
             nettoyer_file_joueur_parti(addr_fantome);
