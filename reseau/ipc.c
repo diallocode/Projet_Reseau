@@ -18,19 +18,19 @@ uint8_t obtenir_type_message(const char *donnee_json) {
         cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
         
         if (cJSON_IsString(type_item)) {
-            if (strcmp(type_item->valuestring, "init") == 0) {
+            if (strcmp(type_item->valuestring, "handshake") == 0) {
                 type_numerique = 0; // Type 0 pour l'initialisation
             } 
-            else if (strcmp(type_item->valuestring, "move") == 0) {
+            else if (strcmp(type_item->valuestring, "update") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
-            }else if (strcmp(type_item->valuestring, "damage") == 0) {
-                type_numerique = 0; // Type 0 pour les damage
-            } 
-            else if (strcmp(type_item->valuestring, "shoot") == 0) {
+            }//else if (strcmp(type_item->valuestring, "damage") == 0) {
+                //type_numerique = 0; // Type 0 pour les damage
+            //}
+            //else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
             //else if (strcmp(type_item->valuestring, "connected") == 0) {
                 //type_numerique = 3;
-            }
+            //}
             //  ajouter d'autres types ici plus tard
         }
         
@@ -245,14 +245,18 @@ int main() {
             nettoyer_file_joueur_parti(addr_fantome);
 
             // Prévenir Python
+            if (id_deconnecte > 0) { 
             char json_deco[128];
             sprintf(json_deco, "{\"type\": \"disconnect\", \"player_id\": %d}", id_deconnecte);
             sendto(sock, json_deco, strlen(json_deco), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
             printf("[DÉCO] Envoyé à Python : %s\n", json_deco);
+        } else {
+        printf("[INFO] Pair jamais identifié, pas de notification Python.\n");
         }
     }
 
     return 0;
+}
 }
     
 
