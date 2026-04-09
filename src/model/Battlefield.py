@@ -253,11 +253,44 @@ class Battlefield:
                 return False
         return True
 
+    def informe_battlefield_state(self):
+        """
+        Envoie l'état actuel du champ de bataille au processus C pour synchronisation.
+        """
+        units_data = []
+        for unit in self.troupes.values():
+            if unit.position is None or not unit.is_alive():
+                continue
+            if unit.id // 1000 != self.general.player_id:
+                continue  # On n'envoie que nos unités pour éviter les conflits de données
+            units_data.append({
+                "id": unit.id,
+                "type": unit.name,
+                "x": unit.position[0],
+                "y": unit.position[1],
+                "hp": unit.hp,
+                "network_owner": self.general.player_id
+            })
+
+        message = {
+            "type": "acknowledgment",
+            "player_id": self.general.player_id,
+            "units": units_data
+        }
+        self.network_manager.send_to_c(message)
+    
     def _handle_new_player(self, data):
         """
         Intègre l'armée d'un nouvel arrivant sur la carte locale.
         data ressemble à : {"type": "handshake", "player_id": 2, "units": [...]}
         """
+        
+        "Supprimer tous les unités de ce joueur s'il existe déjà (cas de reconnexion)"
+        units = self.troupes.values()
+        for unit in list(units):  # list() pour éviter la modification pendant l'itération
+            if getattr(unit, 'network_owner', -1) == data["player_id"]:
+                self.remove_unit(unit.id)
+        
         player_id = data["player_id"]
         remote_units = data["units"]
         from util.UnitsFactory import UnitsFactory
@@ -277,13 +310,14 @@ class Battlefield:
             new_unit.hp = u_data["hp"]
             new_unit.network_owner = player_id 
             new_unit.battlefield = self
-           
             
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
         print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
             
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
+        
+        self.informe_battlefield_state()
         
     def _handle_disconnect(self, data):
         """
