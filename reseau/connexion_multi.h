@@ -2,11 +2,13 @@
 #define OUMAR_H
 
 #include <netinet/in.h> // Requis pour la structure sockaddr_in
+#include <time.h> 
 
 // Structure représentant un joueur dans le carnet d'adresses
 struct paire {
     struct sockaddr_in addr;
     int id;
+    time_t dernier_vu;
 };
 
 // ==========================================
@@ -28,5 +30,15 @@ struct paire* get_connected_peers(int *count);
  * Utile au lancement du jeu pour que le joueur puisse donner son IP à ses amis.
  */
 void afficher_mes_ips();
+
+//fonction pour fermer la connexion 
+int close_socket(int sockfd);
+
+int remove_peer(int index);
+//qelqu'un qui se deconecte via @ip et port
+void disconnect_paire_by_addr(struct sockaddr_in addr);
+//verification des @ inactives
+int check_and_get_inactive_paire(int timeout_sec);
+
 
 #endif // OUMAR_H
