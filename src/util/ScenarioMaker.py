@@ -69,7 +69,7 @@ class ScenarioMaker:
                 
                 # 3. Calcul de l'ID GLOBAL 
                 # Ex: Si tu es le joueur 1 -> ID = 1000 + 0 = 1000
-                global_unit_id = (self.player_id * 1000) + local_unit_idx
+                 global_unit_id = (self.player_id * 1000) + local_unit_idx
                 
                 # 4. On crée l'unité avec l'ID Global
                 u1 = self.units_factory.create_unit(global_unit_id, unit_type)

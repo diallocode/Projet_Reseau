@@ -25,7 +25,7 @@ uint8_t obtenir_type_message(const char *donnee_json) {
                 type_numerique = 0; // Type 0 pour les mouvements
             }else if (strcmp(type_item->valuestring, "damage") == 0) {
                 type_numerique = 0; // Type 0 pour les damage
-            }
+            } 
             else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
             //else if (strcmp(type_item->valuestring, "connected") == 0) {
