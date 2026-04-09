@@ -116,7 +116,6 @@ int main() {
     printf("Processus C prêt !\n");
 
 
-
     while(1){
         fd_set fds;
         FD_ZERO(&fds);
