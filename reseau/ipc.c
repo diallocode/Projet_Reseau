@@ -98,7 +98,11 @@ int main() {
 
         int max_fd = (sock > reseau_fd ? sock : reseau_fd) + 1;
 
-        int ret = select(max_fd, &fds, NULL, NULL, NULL);
+        struct timeval timeout;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+
+        int ret = select(max_fd, &fds, NULL, NULL, &timeout);
         if (ret < 0) {
             perror("Erreur select");
             break;
@@ -139,7 +143,25 @@ int main() {
         }
 
         verifier_retransmissions(reseau_fd); // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
+
+        //Gestion des deconnexions 
+        struct sockaddr_in addr_fantome;
+        int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
+        if (id_deconnecte != -1) {
+            printf("[ALERTE] Le joueur ID %d déconnecté pour inactivité.\n", id_deconnecte);
+
+            // Nettoyer la file d'attente 
+            nettoyer_file_joueur_parti(addr_fantome);
+
+            // Prévenir Python
+            char json_deco[128];
+            sprintf(json_deco, "{\"type\": \"disconnect\", \"player_id\": %d}", id_deconnecte);
+            sendto(sock, json_deco, strlen(json_deco), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+            printf("[DÉCO] Envoyé à Python : %s\n", json_deco);
+        }
     }
+
+    
 
     return 0;
 }
