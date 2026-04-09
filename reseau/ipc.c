@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "cJSON.h"
+#include "diffusion.h"
+#include "connexion_multi.h"
 //#include <cjson/cJSON.h>
 
 // Fonction utilitaire pour traduire le type texte en type réseau
