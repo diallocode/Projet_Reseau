@@ -23,9 +23,9 @@ uint8_t obtenir_type_message(const char *donnee_json) {
             } 
             else if (strcmp(type_item->valuestring, "update") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
-            }//else if (strcmp(type_item->valuestring, "damage") == 0) {
-                //type_numerique = 0; // Type 0 pour les damage
-            //}
+            }else if (strcmp(type_item->valuestring, "acknowledgment") == 0) {
+                type_numerique = 0; // Type 0 pour les damage
+            }
             //else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
             //else if (strcmp(type_item->valuestring, "connected") == 0) {
@@ -160,6 +160,7 @@ int main() {
                }
                uint8_t type_message = obtenir_type_message(buffer);
                // Tous les autres messages → diffusion normale
+               printf("Type message%u\n",type_message);
                diffusion_message_sens1(buffer, reseau_fd, type_message);
                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
 
@@ -253,9 +254,9 @@ int main() {
         printf("[INFO] Pair jamais identifié, pas de notification Python.\n");
         }
     }
-
-    return 0;
 }
+
+    return 0;   
 }
     
 
