@@ -52,5 +52,9 @@ extern long get_time();
 extern void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteur);
 extern void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest);
 extern void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti);
+extern void demarrer_recherche_id(int mon_socket_udp);
+extern int verifier_fin_recherche_id();
+
+
 
 #endif
