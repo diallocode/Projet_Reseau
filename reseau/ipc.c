@@ -135,8 +135,6 @@ int main() {
             break;
         }
 
-        
-
         // Python -> Reseau
         if (FD_ISSET(sock, &fds)) {
             int n = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&python_addr, &python_addr_len);
@@ -147,15 +145,52 @@ int main() {
                 uint8_t type_message = obtenir_type_message(buffer);
 
                 if (type_message == 3) {
-                    // C'est un "connected" → lancer la recherche d'ID
-                    printf("[CONNECT] Lancement de la recherche d'ID...\n");
-                } else {
-                    // Tous les autres messages → diffusion normale
-                    diffusion_message_sens1(buffer, reseau_fd, type_message);
-                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                    // Python nous donne son ID → vérifier s'il est libre
+                    cJSON *json = cJSON_Parse(buffer);
+                    cJSON *id_item = cJSON_GetObjectItem(json, "player_id");
+
+                    if (id_item != NULL) {
+                        int id_propose = id_item->valueint;
+
+                        // Vérifier si cet ID est déjà pris dans le carnet
+                        int id_deja_pris = 0;
+                        int nb_pairs = 0;
+                        struct paire *pairs = get_connected_peers(&nb_pairs);
+
+                        for (int i = 0; i < nb_pairs; i++) {
+                            if (pairs[i].id == id_propose) {
+                               id_deja_pris = 1;
+                            break;
+                            }
+                        }
+
+                    if (id_deja_pris) {
+                        // ID pris → signaler à Python
+                        char json_conflit[64];
+                        sprintf(json_conflit, "{\"type\":\"id_conflit\",\"player_id\":%d}", id_propose);
+                        sendto(sock, json_conflit, strlen(json_conflit), 0,
+                           (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+                        printf("[CONFLIT] ID %d déjà pris ! Python doit choisir un autre.\n", id_propose);
+
+                    } else {
+                        // ID libre → accepter et diffuser aux autres
+                        set_mon_id(id_propose);
+                        printf("[CONNECT] ID %d accepté.\n", id_propose);
+                        diffusion_message_sens1(buffer, reseau_fd, 3);
+                        printf("[CONNECT] Annonce aux autres joueurs faite.\n");
+                    }
                 }
+                cJSON_Delete(json);
+
+            } else {
+                // Tous les autres messages → diffusion normale
+                diffusion_message_sens1(buffer, reseau_fd, type_message);
+                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
             }
         }
+    }
+
+        
 
         // Reseau->Python
         if (FD_ISSET(reseau_fd, &fds)) {
@@ -177,19 +212,6 @@ int main() {
 
         verifier_retransmissions(reseau_fd);
 
-<<<<<<< HEAD
-        // Vérifier si la recherche d'ID est terminée
-        int nouvel_id = verifier_fin_recherche_id();
-        if (nouvel_id != -1) {
-            char json_connected[64];
-            sprintf(json_connected, "{\"type\":\"init\",\"player_id\":%d}", nouvel_id);
-            sendto(sock, json_connected, strlen(json_connected), 0,
-                (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
-            printf("[CONNECT] ID attribué : %d → envoyé à Python\n", nouvel_id);
-        } // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
-
-=======
->>>>>>> 447d05c8992f5d410a305d2015f88a863de419ab
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
         int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
