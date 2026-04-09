@@ -152,7 +152,7 @@ int main() {
                    if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
                        cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
                        if (cJSON_IsNumber(id_item)) {
-                           set_mon_id((uint8_t)id_item->valueint);     // Mise a jour de l'id
+                           set_mon_id((uint32_t)id_item->valueint);     // Mise a jour de l'id
                            printf("[SYSTÈME] Mon ID a été configuré en dur à : %d\n", id_item->valueint);
                        }
                    }
