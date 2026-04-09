@@ -11,7 +11,7 @@ static uint8_t mon_id_joueur = 0; // identifiant du joueur
 static uint32_t compteur_sequence = 0;          // sequence
 
 // Python->Reseau
-int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int type_msg){
+int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg){
 
     // CREATION DE L'ENVELOPPE
     EnteteUDP enveloppe;        
@@ -46,7 +46,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int typ
         struct sockaddr_in dest_addr = players[i].addr;
 
         /* diffusion vers tous les players */
-        if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr_in)) < 0){
+        if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, 0, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr_in)) < 0){
             printf("erreur-sendto");
         }
 
@@ -109,7 +109,7 @@ char *diffusion_message_sens2(int reseau_fd){
     char *Buffer = malloc(TAILLE_PAQUET);
     if(Buffer == NULL){
         printf("erreur d'allocation du buffer");
-        return -1;
+        return NULL;
     }
 
     // Reception
@@ -118,6 +118,8 @@ char *diffusion_message_sens2(int reseau_fd){
         free(Buffer);
         return NULL;
     }
+
+    add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
 
     // recuperation de l'enveloppe
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
@@ -133,6 +135,7 @@ char *diffusion_message_sens2(int reseau_fd){
         case 3: /* INIT */
         case 4: /* ATTACK */
         case 0: /* MOVE */
+            printf("Message Reçu");
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);     // Pour indiquer qu'on a recu le paquet
 
             char *donnee_json = malloc(taille_json+1);
@@ -154,7 +157,7 @@ char *diffusion_message_sens2(int reseau_fd){
 
         case 2: /* detection de la deconnexion */
             printf("[SYSTEME] Ping reçu de l'expéditeur.\n");
-            signaler_presence_a_oumar(addr_distant);  // On signale la presence du joeur
+            //signaler_presence_a_oumar(addr_distant);  // On signale la presence du joeur
 
             free(Buffer);
             return NULL;
