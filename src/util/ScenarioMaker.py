@@ -94,7 +94,8 @@ class ScenarioMaker:
                     "type": unit_type,
                     "x": pos[1],
                     "y": pos[0],
-                    "hp": u1.hp
+                    "hp": u1.hp,
+                    "network_owner": self.player_id
                 })
 
     def create_generals(self):
