@@ -282,6 +282,7 @@ class Battlefield:
             
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
             
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
         

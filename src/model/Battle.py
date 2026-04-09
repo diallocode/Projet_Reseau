@@ -71,6 +71,7 @@ class Battle:
                if msg["type"] == "handshake":
                    print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
                    self.battlefield._handle_new_player(msg)
+                   #exit() # Debug: Stop after handshake to verify correctness
                elif msg["type"] == "update":
                    print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                    self.battlefield._handle_unit_update(msg)
