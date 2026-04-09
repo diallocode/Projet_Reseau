@@ -28,14 +28,8 @@ uint8_t obtenir_type_message(const char *donnee_json) {
             }
             else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
-            }else if (strcmp(type_item->valuestring, "connect") == 0) {
-                type_numerique = 3; // Type 3 pour la tentative de connexion
-            }else if (strcmp(type_item->valuestring, "DISCOVERY") == 0) {
-                type_numerique = 5; 
-            }else if (strcmp(type_item->valuestring, "DISCOVERY_REPLY") == 0) {
-                type_numerique = 6; 
             }else if (strcmp(type_item->valuestring, "connected") == 0) {
-                type_numerique = 4;
+                type_numerique = 3;
             }
             //  ajouter d'autres types ici plus tard
         }
@@ -112,15 +106,11 @@ int main() {
         printf("[INFO] Pair %s:5002 ajouté au carnet.\n", ip_pair);
 
         printf("[CONNECT] Lancement de la recherche d'ID...\n");
-        demarrer_recherche_id(reseau_fd);
-
     } else {
-        set_mon_id(1);
+        //set_mon_id(1);
         printf("[INFO] Vous êtes le joueur 1.\n");
 
-        char json_connected[64];
-        sprintf(json_connected, "{\"type\":\"connected\",\"player_id\":1}");
-        sendto(sock, json_connected, strlen(json_connected), 0,(struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+        
     }
 
     printf("Processus C prêt !\n");
@@ -157,9 +147,8 @@ int main() {
                 uint8_t type_message = obtenir_type_message(buffer);
 
                 if (type_message == 3) {
-                    // C'est un "connect" → lancer la recherche d'ID
+                    // C'est un "connected" → lancer la recherche d'ID
                     printf("[CONNECT] Lancement de la recherche d'ID...\n");
-                    demarrer_recherche_id(reseau_fd);
                 } else {
                     // Tous les autres messages → diffusion normale
                     diffusion_message_sens1(buffer, reseau_fd, type_message);
@@ -188,16 +177,6 @@ int main() {
 
         verifier_retransmissions(reseau_fd);
 
-        // Vérifier si la recherche d'ID est terminée
-        int nouvel_id = verifier_fin_recherche_id();
-        if (nouvel_id != -1) {
-            char json_connected[64];
-            sprintf(json_connected, "{\"type\":\"connected\",\"player_id\":%d}", nouvel_id);
-            sendto(sock, json_connected, strlen(json_connected), 0,
-                (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
-            printf("[CONNECT] ID attribué : %d → envoyé à Python\n", nouvel_id);
-        } // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
-
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
         int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
@@ -216,8 +195,6 @@ int main() {
             printf("[DÉCO] Envoyé à Python : %s\n", json_deco);
         }
     }
-
-    
 
     return 0;
 }
