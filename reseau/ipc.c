@@ -153,7 +153,7 @@ int main()
             if (n > 0)
             {
                 buffer[n] = '\0';
-                printf("[PYTHON] Reçu : %s\n", buffer);
+                //printf("[PYTHON] Reçu : %s\n", buffer);
 
                 cJSON *json = cJSON_Parse(buffer);
                 int est_connected = 0;
@@ -180,7 +180,7 @@ int main()
                 {
                     uint8_t type_message = obtenir_type_message(buffer);
                     diffusion_message_sens1(buffer, reseau_fd, type_message);
-                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                    //printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
                 }
             }
         }
