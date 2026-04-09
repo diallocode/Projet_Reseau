@@ -261,7 +261,7 @@ class Battlefield:
         for unit in self.troupes.values():
             if unit.position is None or not unit.is_alive():
                 continue
-            if unit.id // 1000 != self.general.id:
+            if unit.id // 1000 != unit.id // 1000:  # Si ce n'est pas une unité du joueur local, on l'ignore
                 continue  # On n'envoie que nos unités pour éviter les conflits de données
             units_data.append({
                 "id": unit.id,
@@ -269,12 +269,12 @@ class Battlefield:
                 "x": unit.position[0],
                 "y": unit.position[1],
                 "hp": unit.hp,
-                "network_owner": self.general.id
+                "network_owner": unit.id // 1000
             })
 
         message = {
             "type": "acknowledgment",
-            "player_id": self.general.id,
+            "player_id": unit.id // 1000,
             "units": units_data
         }
         self.network_manager.send_to_c(message)
