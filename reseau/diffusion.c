@@ -123,8 +123,7 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 
     add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
-    //actualiser_activite(addr_distant);  // On remet son temps a 0
-    // recuperation de l'enveloppe
+   
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
     actualiser_activite(addr_distant, enveloppe_recue->id_expediteur);
 
@@ -142,6 +141,7 @@ char *diffusion_message_sens2(int reseau_fd){
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);    
 
             char *donnee_json = malloc(taille_json+1);
+            if (!donnee_json) { free(Buffer); return NULL; }
             memcpy(donnee_json, Buffer + sizeof(EnteteUDP), taille_json);
             donnee_json[taille_json] = '\0';    // fermeture correcte de la chaine
 
@@ -165,15 +165,6 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
-        /*case 3: // Premiere tentative de connexion (connect)
-            printf("[P2P] Requête de découverte reçue de %s:%d\n", inet_ntoa(addr_distant.sin_addr), ntohs(addr_distant.sin_port));
-            if (mon_id_joueur > 0) {
-                // Je renvoie un Type 6 à l'expéditeur. Mon ID se mettra automatiquement dans l'en-tête.
-                message_systeme(reseau_fd, 4, 0, addr_distant);
-            }
-            free(Buffer);
-            return NULL;*/
-
     default:    /*Message inconnu*/
         printf("[ALERTE] Type de message inconnu reçu.\n");
         free(Buffer);
@@ -181,54 +172,6 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 
 }
-
-
-
-
-
-/*// Fonction pour lancer la recherche d'ID
-void demarrer_recherche_id(int mon_socket_udp) {
-    printf("[P2P] Démarrage de la recherche d'ID\n");
-    
-    // On remet le tableau des ID à zéro
-    for(int i = 0; i < 10; i++) {
-        ids_deja_pris[i] = 0;
-    }
-    
-    // On lance le chronomètre
-    temps_debut_recherche = get_time();
-
-    // On envoie la question (Type 5) à tous les amis dans le carnet d'Oumar
-    int nombre_de_joueurs = 0;
-    struct paire *players = get_connected_peers(&nombre_de_joueurs);
-    
-    for (int i = 0; i < nombre_de_joueurs; i++) {
-        // Attention : on passe un num_seq à 0 car ce n'est pas un message vital à retransmettre
-        message_systeme(mon_socket_udp, 5, 0, players[i].addr);
-    }
-}
-
-// Fonction pour vérifier si le chrono est écoulé et s'attribuer un ID (plus necessaire)
-int verifier_fin_recherche_id() {
-    // Si on cherche un ID et que 500ms se sont écoulées...
-    if (temps_debut_recherche > 0 && (get_time() - temps_debut_recherche > 500)) {
-        
-        // On cherche le premier ID libre (en commençant à 1)
-        uint8_t nouvel_id = 1;
-        while (nouvel_id < 10 && ids_deja_pris[nouvel_id] == 1) {
-            nouvel_id++;
-        }
-
-        // On se l'attribue
-        set_mon_id(nouvel_id);
-        temps_debut_recherche = 0; // On arrête la recherche
-        
-        printf(">>>> [SUCCÈS] MON NOUVEL ID EST %d <<<<\n", nouvel_id);
-        return nouvel_id; // On retourne l'ID pour que ipc.c prévienne Python
-    }
-    
-    return -1; // La recherche tourne encore
-}*/
 
 
 

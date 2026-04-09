@@ -12,6 +12,11 @@ int nb_joueur_connecte = 0;
 
 //  La fonction pour ajouter un contact
 void add_peer_if_new(struct sockaddr_in new_peer_addr) {
+    printf("[DEBUG] Tentative ajout pair : %s:%d\n",
+    inet_ntoa(new_peer_addr.sin_addr),
+    ntohs(new_peer_addr.sin_port));  // ← ce port est-il bien 5002 ?
+
+
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == new_peer_addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == new_peer_addr.sin_port) {
@@ -21,6 +26,7 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
    if (nb_joueur_connecte < NB_JOUEUR_MAX) {
        paire_connected[nb_joueur_connecte].addr = new_peer_addr;
        paire_connected[nb_joueur_connecte].dernier_vu = time(NULL);
+       paire_connected[nb_joueur_connecte].id = 0;
        nb_joueur_connecte++;
        printf("[CARNET] Nouveau pair ajouté ! Total : %d\n", nb_joueur_connecte);
    }
@@ -103,17 +109,6 @@ int remove_peer(int index) {
     return id_supprime; // On retourne l'ID du joueur supprimé pour que tanou puisse faire son broadcast
 }
 
-
-// AJOUTE CETTE FONCTION : Pour dire Il est vivant !
-/*void actualiser_activite(struct sockaddr_in addr, uint32_t id_joueur) {
-    for (int i = 0; i < nb_joueur_connecte; i++) {
-        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
-            paire_connected[i].addr.sin_port == addr.sin_port) {
-            paire_connected[i].dernier_vu = time(NULL); // On remet le chrono à zéro
-            return;
-        }
-    }
-}*/
 
 void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
    for (int i = 0; i < nb_joueur_connecte; i++) {

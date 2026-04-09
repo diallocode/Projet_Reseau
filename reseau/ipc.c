@@ -11,8 +11,8 @@
 //#include <cjson/cJSON.h>
 
 // Fonction utilitaire pour traduire le type texte en type réseau
-uint8_t obtenir_type_message(const char *donnee_json) {
-    uint8_t type_numerique = 0; // 0 par défaut 
+uint32_t obtenir_type_message(const char *donnee_json) {
+    uint32_t type_numerique = 0; // 0 par défaut 
     cJSON *json = cJSON_Parse(donnee_json);
     if (json != NULL) {
         cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
@@ -26,12 +26,6 @@ uint8_t obtenir_type_message(const char *donnee_json) {
             }else if (strcmp(type_item->valuestring, "acknowledgment") == 0) {
                 type_numerique = 0; // Type 0 pour les damage
             }
-            //else if (strcmp(type_item->valuestring, "shoot") == 0) {
-                type_numerique = 0; // Type 0 pour les tirs
-            //else if (strcmp(type_item->valuestring, "connected") == 0) {
-                //type_numerique = 3;
-            //}
-            //  ajouter d'autres types ici plus tard
         }
         
         // on libère la mémoire avant de quitter !
@@ -159,59 +153,12 @@ int main() {
                    }
                    cJSON_Delete(json);
                }
-
                else {
-                    uint8_t type_message = obtenir_type_message(buffer);
+                    uint32_t type_message = obtenir_type_message(buffer);
                     // Tous les autres messages → diffusion normale
                     diffusion_message_sens1(buffer, reseau_fd, type_message);
                     printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-
                }
-              
-
-                /*if (type_message == 3) {
-                    // Python nous donne son ID → vérifier s'il est libre
-                    cJSON *json = cJSON_Parse(buffer);
-                    cJSON *id_item = cJSON_GetObjectItem(json, "player_id");
-
-                    if (id_item != NULL) {
-                        int id_propose = id_item->valueint;
-
-                       // Vérifier si cet ID est déjà pris dans le carnet
-                        int id_deja_pris = 0;
-                        int nb_pairs = 0;
-                        struct paire *pairs = get_connected_peers(&nb_pairs);
-
-                        for (int i = 0; i < nb_pairs; i++) {
-                            if (pairs[i].id == id_propose) {
-                               id_deja_pris = 1;
-                            break;
-                            }
-                        }
-
-                    if (id_deja_pris) {
-                        // ID pris → signaler à Python
-                        char json_conflit[64];
-                        sprintf(json_conflit, "{\"type\":\"id_conflit\",\"player_id\":%d}", id_propose);
-                        sendto(sock, json_conflit, strlen(json_conflit), 0,
-                           (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
-                        printf("[CONFLIT] ID %d déjà pris ! Python doit choisir un autre.\n", id_propose);
-
-                    } else {
-                        // ID libre → accepter et diffuser aux autres
-                        set_mon_id(id_propose);
-                        printf("[CONNECT] ID %d accepté.\n", id_propose);
-                        diffusion_message_sens1(buffer, reseau_fd, 3);
-                        printf("[CONNECT] Annonce aux autres joueurs faite.\n");
-                    }
-                }
-                cJSON_Delete(json);
-
-            } else {
-                // Tous les autres messages → diffusion normale
-                diffusion_message_sens1(buffer, reseau_fd, type_message);
-                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-            }*/
         }
     }
 
@@ -226,7 +173,7 @@ int main() {
                 int ret = sendto(sock, json_propre, strlen(json_propre), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
                 if (ret < 0) {
                     perror("Erreur envoi vers Python");
-                    return -1;
+                    free(json_propre);
                 } else {
                     printf("[RÉSEAU→PYTHON] JSON transmis au jeu !\n");
                 }
