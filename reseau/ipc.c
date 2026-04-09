@@ -155,7 +155,7 @@ int main() {
         int nouvel_id = verifier_fin_recherche_id();
         if (nouvel_id != -1) {
             char json_connected[64];
-            sprintf(json_connected, "{\"type\":\"connected\",\"player_id\":%d}", nouvel_id);
+            sprintf(json_connected, "{\"type\":\"init\",\"player_id\":%d}", nouvel_id);
             sendto(sock, json_connected, strlen(json_connected), 0,
                 (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
             printf("[CONNECT] ID attribué : %d → envoyé à Python\n", nouvel_id);

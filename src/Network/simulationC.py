@@ -21,7 +21,7 @@ def start_mock_c():
     sock.sendto(json.dumps(init_msg).encode(), addr)
     print(f"Envoyé à Python: Initialisation ID 1")
 
-    time.sleep(1) # Petite pause pour simuler le délai réseau
+    time.sleep(20) # Petite pause pour simuler le délai réseau
 
     # 3. Simuler l'envoi d'un "Gros Message" de config
     units_config = {
