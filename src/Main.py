@@ -31,7 +31,7 @@ if __name__ == '__main__':
         battlefield = Battlefield(COLS, ROWS, my_units, generate_heightmap(COLS, ROWS))
 
         if args.terminal:
-            view = Console(battlefield)
+            view = Console(battlefield, args.player_id)
         else:
             view = GUI(battlefield, [general], VIEW_ELEVATION)
 
