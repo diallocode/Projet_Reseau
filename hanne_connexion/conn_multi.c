@@ -31,7 +31,7 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
         paire_connected[nb_joueur_connecte].dernier_vu = time(NULL);
         
         // Attribution de l'ID FIXE
-        paire_connected[nb_joueur_connecte].id = next_id_to_assign++; 
+        paire_connected[nb_joueur_connecte].id = next_id_to_assign++
         
         printf("[CARNET] Nouveau pair ! ID: %d | Total connectés: %d\n", 
                 paire_connected[nb_joueur_connecte].id, nb_joueur_connecte + 1);

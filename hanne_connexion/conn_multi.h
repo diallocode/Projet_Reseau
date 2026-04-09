@@ -38,4 +38,5 @@ int remove_peer(int index);
 void disconnect_paire_by_addr(struct sockaddr_in addr);
 //verification des @ inactives
 int check_and_get_inactive_paire(int timeout_sec);
+
 #endif // OUMAR_H
