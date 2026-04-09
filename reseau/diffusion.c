@@ -165,6 +165,19 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
+       /* case 3:  acknowledgment applicatif — signal simple
+            printf("[RÉSEAU] Acknowledgment applicatif reçu.\n");
+            
+            // On le transmet quand même à Python pour qu'il sache
+            // que l'adversaire a bien reçu le handshake
+            char *donnee_json = malloc(taille_json + 1);
+            if (!donnee_json) { free(Buffer); return NULL; }
+            memcpy(donnee_json, Buffer + sizeof(EnteteUDP), taille_json);
+            donnee_json[taille_json] = '\0';
+            
+            free(Buffer);
+            return donnee_json;  // Python reçoit le message mais sans unités
+         */
     default:    /*Message inconnu*/
         printf("[ALERTE] Type de message inconnu reçu.\n");
         free(Buffer);
