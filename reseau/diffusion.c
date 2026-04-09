@@ -119,6 +119,8 @@ char *diffusion_message_sens2(int reseau_fd){
         return NULL;
     }
 
+    add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
+
     // recuperation de l'enveloppe
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
 
