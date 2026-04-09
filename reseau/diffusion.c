@@ -135,6 +135,7 @@ char *diffusion_message_sens2(int reseau_fd){
         case 3: /* INIT */
         case 4: /* ATTACK */
         case 0: /* MOVE */
+            printf("Message Reçu");
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);     // Pour indiquer qu'on a recu le paquet
 
             char *donnee_json = malloc(taille_json+1);
