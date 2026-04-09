@@ -14,14 +14,12 @@ ENTETE = "!BBIH"  # ! = big-endian
 def envoyer_paquet(sock, type_msg, num_seq, donnee_json):
     json_bytes = donnee_json.encode()
     taille = len(json_bytes)
-    # Construire l'entête
-    entete = struct.pack(ENTETE, 
+    entete = struct.pack(ENTETE,
         2,          # id_expediteur = joueur 2
         type_msg,   # type du message
         num_seq,    # numéro de séquence
         taille      # taille du JSON
     )
-    # Coller entête + JSON et envoyer sur le port réseau
     paquet = entete + json_bytes
     sock.sendto(paquet, ("127.0.0.1", 5002))
     print(f"[ENVOYÉ] type={type_msg} seq={num_seq} json={donnee_json}")
@@ -31,6 +29,7 @@ sock_envoi = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Socket pour écouter ce que ton C transmet à Python (port 5003)
 sock_python = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock_python.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # ← correction
 sock_python.bind(("127.0.0.1", 5003))
 sock_python.settimeout(2.0)
 
