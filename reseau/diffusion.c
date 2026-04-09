@@ -1,5 +1,6 @@
 #include "diffusion.h"
 #include "cJSON.h"
+#include "connexion_multi.h"
 
 
 
@@ -21,7 +22,8 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int typ
     compteur_sequence++;
 
     // Recuperation de la liste des destinateurs
-    struct sockaddr_in *dest_addr = NULL;   //
+    int nombre_de_joueurs = 0;
+    struct paire *players = get_connected_peers(&nombre_de_joueurs);   //
 
     /* TRANSMISSION DU PAQUET  */
     // Le buffer
@@ -38,42 +40,34 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int typ
 
 
     // Boucle principale (sur la liste chainee)
-    while (dest_addr != NULL)
+    for (int i = 0; i < nombre_de_joueurs; i++)
     {
+        /* code */
+        struct sockaddr_in dest_addr = players[i].addr;
+
         /* diffusion vers tous les players */
-        if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)dest_addr, sizeof(struct sockaddr_in)) < 0){
+        if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr_in)) < 0){
             printf("erreur-sendto");
         }
-    
-        /*Gestion de la file d'attente*/
+
         NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
+        if (nouveau_colis != NULL) {
+            // en tete
+            nouveau_colis->entete = enveloppe;
 
-        if (nouveau_colis == NULL) {
-            perror("Erreur critique : Plus de mémoire pour archiver le colis");
-            return 1;
+            // donnee-json
+            strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);
+            nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
+            nouveau_colis->temps_envoi = get_time();    // temps
+            
+            // On sauvegarde l'adresse exacte de la cible !
+            nouveau_colis->dest = dest_addr; 
+
+            nouveau_colis->suivant = file_attente;
+            file_attente = nouveau_colis;
         }
-
-        // ajout de l'enveloppe
-        nouveau_colis->entete = enveloppe;
-
-        // ajout du json
-        strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);   // copie
-        nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
-
-        // ajout du temp
-        nouveau_colis->temps_envoi = get_time(); // a definir plus tard
-
-        // ajout de l'adresse dest du paquet
-        nouveau_colis->dest = *dest_addr;
-
-        // ajout a la liste globale
-        nouveau_colis->suivant = file_attente;
-        file_attente = nouveau_colis;
-
-        //dest_addr = dest_addr->suivant; // avancement
-
     }
-    
+
     free(Buffer);
     return 0;
 }
@@ -164,6 +158,10 @@ char *diffusion_message_sens2(int reseau_fd){
 
             free(Buffer);
             return NULL;
+
+        case 5: /*Type pour initier une premiere connexion a fin d'obtenir un id*/
+
+        case 6: /* Reponse avec les ids */
 
     default:    /*Message inconnu*/
         printf("[ALERTE] Type de message inconnu reçu.\n");
