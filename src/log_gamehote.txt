@@ -1,0 +1,106 @@
+Script démarré sur 2026-04-09 22:27:19+02:00 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="80" LINES="24"]
+[?2004h]0;barrydiallo@dell: ~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[01;32mbarrydiallo@dell[00m:[01;34m~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[00m$ clearifconfigpython3 Main.py run Daft
+[?2004l<frozen importlib._bootstrap>:488: RuntimeWarning: Your system is avx2 capable but pygame was not built with support for it. The performance of some of your blits could be adversely affected. Consider enabling compile time detection with environment variables like PYGAME_DETECT_AVX2=1 if you are compiling without cross compilation.
+pygame 2.5.2 (SDL 2.30.0, Python 3.12.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Initialisation du pont réseau IPC...
+Initialisation locale de l'ID joueur...
+ID attribué (PID) : 498904
+[Network] 42 octets envoyés à C : {'type': 'connected', 'player_id': 498904}
+Running battle with Daft Strategy as Player 498904
+Please enter a scenario
+Format : {"Crossbowman":10, "Pikeman":10,"Knight":10,"startLine":55,"startCol":50,"armyDistance":10, "unitPerCol":10}
+->{"Crossbowman":10, "Pikeman":10,"Knight":10,"startLine":55,"startCol":50,"armyDistance":10, "unitPerCol":10}
+[Network] 2823 octets envoyés à C : {'type': 'handshake', 'player_id': 498904, 'units': [{'id': 498904000, 'type': 'Crossbowman', 'x': 55, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904001, 'type': 'Crossbowman', 'x': 56, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904002, 'type': 'Crossbowman', 'x': 57, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904003, 'type': 'Crossbowman', 'x': 58, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904004, 'type': 'Crossbowman', 'x': 59, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904005, 'type': 'Crossbowman', 'x': 60, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904006, 'type': 'Crossbowman', 'x': 61, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904007, 'type': 'Crossbowman', 'x': 62, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904008, 'type': 'Crossbowman', 'x': 63, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904009, 'type': 'Crossbowman', 'x': 64, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904010, 'type': 'Pikeman', 'x': 55, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904011, 'type': 'Pikeman', 'x': 56, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904012, 'type': 'Pikeman', 'x': 57, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904013, 'type': 'Pikeman', 'x': 58, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904014, 'type': 'Pikeman', 'x': 59, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904015, 'type': 'Pikeman', 'x': 60, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904016, 'type': 'Pikeman', 'x': 61, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904017, 'type': 'Pikeman', 'x': 62, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904018, 'type': 'Pikeman', 'x': 63, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904019, 'type': 'Pikeman', 'x': 64, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904020, 'type': 'Knight', 'x': 55, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904021, 'type': 'Knight', 'x': 56, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904022, 'type': 'Knight', 'x': 57, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904023, 'type': 'Knight', 'x': 58, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904024, 'type': 'Knight', 'x': 59, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904025, 'type': 'Knight', 'x': 60, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904026, 'type': 'Knight', 'x': 61, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904027, 'type': 'Knight', 'x': 62, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904028, 'type': 'Knight', 'x': 63, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904029, 'type': 'Knight', 'x': 64, 'y': 52, 'hp': 100, 'network_owner': 498904}]}
+Handshake reçu pour le player 7648 avec 30 unités
+Création de l'unité 7648000 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648001 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648002 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648003 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648004 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648005 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648006 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648007 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648008 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648009 de type Crossbowman pour le joueur 7648
+Création de l'unité 7648010 de type Pikeman pour le joueur 7648
+Création de l'unité 7648011 de type Pikeman pour le joueur 7648
+Création de l'unité 7648012 de type Pikeman pour le joueur 7648
+Création de l'unité 7648013 de type Pikeman pour le joueur 7648
+Création de l'unité 7648014 de type Pikeman pour le joueur 7648
+Création de l'unité 7648015 de type Pikeman pour le joueur 7648
+Création de l'unité 7648016 de type Pikeman pour le joueur 7648
+Création de l'unité 7648017 de type Pikeman pour le joueur 7648
+Création de l'unité 7648018 de type Pikeman pour le joueur 7648
+Création de l'unité 7648019 de type Pikeman pour le joueur 7648
+Création de l'unité 7648020 de type Knight pour le joueur 7648
+Création de l'unité 7648021 de type Knight pour le joueur 7648
+Création de l'unité 7648022 de type Knight pour le joueur 7648
+Création de l'unité 7648023 de type Knight pour le joueur 7648
+Création de l'unité 7648024 de type Knight pour le joueur 7648
+Création de l'unité 7648025 de type Knight pour le joueur 7648
+Création de l'unité 7648026 de type Knight pour le joueur 7648
+Création de l'unité 7648027 de type Knight pour le joueur 7648
+Création de l'unité 7648028 de type Knight pour le joueur 7648
+Création de l'unité 7648029 de type Knight pour le joueur 7648
+Troupes après intégration du joueur 7648: 60 unités sur le champ de bataille.
+L'armée du joueur 7648 a rejoint la bataille !
+[Network] 2826 octets envoyés à C : {'type': 'acknowledgment', 'player_id': 7648, 'units': [{'id': 498904000, 'type': 'Crossbowman', 'x': 55, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904001, 'type': 'Crossbowman', 'x': 56, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904002, 'type': 'Crossbowman', 'x': 57, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904003, 'type': 'Crossbowman', 'x': 58, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904004, 'type': 'Crossbowman', 'x': 59, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904005, 'type': 'Crossbowman', 'x': 60, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904006, 'type': 'Crossbowman', 'x': 61, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904007, 'type': 'Crossbowman', 'x': 62, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904008, 'type': 'Crossbowman', 'x': 63, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904009, 'type': 'Crossbowman', 'x': 64, 'y': 50, 'hp': 35, 'network_owner': 498904}, {'id': 498904010, 'type': 'Pikeman', 'x': 55, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904011, 'type': 'Pikeman', 'x': 56, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904012, 'type': 'Pikeman', 'x': 57, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904013, 'type': 'Pikeman', 'x': 58, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904014, 'type': 'Pikeman', 'x': 59, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904015, 'type': 'Pikeman', 'x': 60, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904016, 'type': 'Pikeman', 'x': 61, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904017, 'type': 'Pikeman', 'x': 62, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904018, 'type': 'Pikeman', 'x': 63, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904019, 'type': 'Pikeman', 'x': 64, 'y': 51, 'hp': 55, 'network_owner': 498904}, {'id': 498904020, 'type': 'Knight', 'x': 55, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904021, 'type': 'Knight', 'x': 56, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904022, 'type': 'Knight', 'x': 57, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904023, 'type': 'Knight', 'x': 58, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904024, 'type': 'Knight', 'x': 59, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904025, 'type': 'Knight', 'x': 60, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904026, 'type': 'Knight', 'x': 61, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904027, 'type': 'Knight', 'x': 62, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904028, 'type': 'Knight', 'x': 63, 'y': 52, 'hp': 100, 'network_owner': 498904}, {'id': 498904029, 'type': 'Knight', 'x': 64, 'y': 52, 'hp': 100, 'network_owner': 498904}]}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648001, 'hp': 30.0, 'network_owner': 7648, 'x': 56, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648001, 'hp': 30.0, 'network_owner': 7648, 'x': 56, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648002, 'hp': 30.0, 'network_owner': 7648, 'x': 57, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648002, 'hp': 30.0, 'network_owner': 7648, 'x': 57, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648003, 'hp': 30.0, 'network_owner': 7648, 'x': 58, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648003, 'hp': 30.0, 'network_owner': 7648, 'x': 58, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648004, 'hp': 30.0, 'network_owner': 7648, 'x': 59, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648004, 'hp': 30.0, 'network_owner': 7648, 'x': 59, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648005, 'hp': 30.0, 'network_owner': 7648, 'x': 60, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648005, 'hp': 30.0, 'network_owner': 7648, 'x': 60, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648007, 'hp': 30.0, 'network_owner': 7648, 'x': 62, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648007, 'hp': 30.0, 'network_owner': 7648, 'x': 62, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648008, 'hp': 30.0, 'network_owner': 7648, 'x': 63, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648008, 'hp': 30.0, 'network_owner': 7648, 'x': 63, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648009, 'hp': 30.0, 'network_owner': 7648, 'x': 64, 'y': 50}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648009, 'hp': 30.0, 'network_owner': 7648, 'x': 64, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648010, 'hp': 51.0, 'network_owner': 7648, 'x': 55, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648010, 'hp': 51.0, 'network_owner': 7648, 'x': 55, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648011, 'hp': 51.0, 'network_owner': 7648, 'x': 56, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648011, 'hp': 51.0, 'network_owner': 7648, 'x': 56, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648012, 'hp': 51.0, 'network_owner': 7648, 'x': 57, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648012, 'hp': 51.0, 'network_owner': 7648, 'x': 57, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648013, 'hp': 51.0, 'network_owner': 7648, 'x': 58, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648013, 'hp': 51.0, 'network_owner': 7648, 'x': 58, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648014, 'hp': 51.0, 'network_owner': 7648, 'x': 59, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648014, 'hp': 51.0, 'network_owner': 7648, 'x': 59, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648015, 'hp': 51.0, 'network_owner': 7648, 'x': 60, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648015, 'hp': 51.0, 'network_owner': 7648, 'x': 60, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648016, 'hp': 51.0, 'network_owner': 7648, 'x': 61, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648016, 'hp': 51.0, 'network_owner': 7648, 'x': 61, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648017, 'hp': 51.0, 'network_owner': 7648, 'x': 62, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648017, 'hp': 51.0, 'network_owner': 7648, 'x': 62, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648018, 'hp': 51.0, 'network_owner': 7648, 'x': 63, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648018, 'hp': 51.0, 'network_owner': 7648, 'x': 63, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648019, 'hp': 51.0, 'network_owner': 7648, 'x': 64, 'y': 51}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648019, 'hp': 51.0, 'network_owner': 7648, 'x': 64, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648020, 'hp': 92.0, 'network_owner': 7648, 'x': 55, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648020, 'hp': 92.0, 'network_owner': 7648, 'x': 55, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648021, 'hp': 92.0, 'network_owner': 7648, 'x': 56, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648021, 'hp': 92.0, 'network_owner': 7648, 'x': 56, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648022, 'hp': 92.0, 'network_owner': 7648, 'x': 57, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648022, 'hp': 92.0, 'network_owner': 7648, 'x': 57, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648023, 'hp': 92.0, 'network_owner': 7648, 'x': 58, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648023, 'hp': 92.0, 'network_owner': 7648, 'x': 58, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648024, 'hp': 92.0, 'network_owner': 7648, 'x': 59, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648024, 'hp': 92.0, 'network_owner': 7648, 'x': 59, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648025, 'hp': 92.0, 'network_owner': 7648, 'x': 60, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648025, 'hp': 92.0, 'network_owner': 7648, 'x': 60, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648026, 'hp': 92.0, 'network_owner': 7648, 'x': 61, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648026, 'hp': 92.0, 'network_owner': 7648, 'x': 61, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648027, 'hp': 92.0, 'network_owner': 7648, 'x': 62, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648027, 'hp': 92.0, 'network_owner': 7648, 'x': 62, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648028, 'hp': 92.0, 'network_owner': 7648, 'x': 63, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648028, 'hp': 92.0, 'network_owner': 7648, 'x': 63, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 7648029, 'hp': 92.0, 'network_owner': 7648, 'x': 64, 'y': 52}
+[Network] 86 octets envoyés à C : {'type': 'update', 'id': 7648029, 'hp': 92.0, 'network_owner': 7648, 'x': 64, 'y': 52}
+Handshake reçu pour le player 498904 avec 30 unités
+Création de l'unité 7648

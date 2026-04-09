@@ -121,7 +121,7 @@ char *diffusion_message_sens2(int reseau_fd){
         free(Buffer);
         return NULL;
     }
-
+    addr_distant.sin_port = htons(5002);    // forcer les ecoutes sur 5002
     add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
    
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
