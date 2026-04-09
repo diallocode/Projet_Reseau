@@ -19,8 +19,7 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
    }
    if (nb_joueur_connecte < NB_JOUEUR_MAX) {
        paire_connected[nb_joueur_connecte].addr = new_peer_addr;
-       // Note : L'ID géré ici par Oumar sautera demain quand tu feras ton système P2P
-       paire_connected[nb_joueur_connecte].id = nb_joueur_connecte; 
+       paire_connected[nb_joueur_connecte].dernier_vu = time(NULL);
        nb_joueur_connecte++;
        printf("[CARNET] Nouveau pair ajouté ! Total : %d\n", nb_joueur_connecte);
    }
@@ -48,4 +47,68 @@ void afficher_mes_ips() {
    }
    printf("----------------------------------\n");
    freeifaddrs(ifaddrp);
+}
+
+
+int close_socket(int sockfd) {
+     close(sockfd);
+     return 0;
+}
+
+
+int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out) {
+    time_t now = time(NULL);
+    for (int i = 0; i < nb_joueur_connecte; i++) {
+        if (difftime(now, paire_connected[i].dernier_vu) > timeout_sec) {
+            if (addr_out != NULL) {
+                *addr_out = paire_connected[i].addr;
+            }
+        }
+    }
+    return -1; // Personne n'est inactif
+}
+
+
+//deconnexion dans le cas ou l'utilisateur appui sur quitter (on peut identifier l'utilisateur à trvaers son ip et port)
+void disconnect_paire_by_addr(struct sockaddr_in addr) {
+    for (int i = 0; i < nb_joueur_connecte; i++) {
+        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
+            paire_connected[i].addr.sin_port == addr.sin_port) {
+            remove_peer(i);
+            printf("[INFO] Déconnexion volontaire réussie.\n");
+            return;
+        }
+    }
+}
+
+//supprimer un joueuer du carnet d'adresse
+int remove_peer(int index) {
+    if (index < 0 || index >= nb_joueur_connecte) return -1;
+    // 1. On sauvegarde l'ID avant qu'il ne disparaisse
+    int id_supprime = paire_connected[index].id;
+    printf("[CARNET] Le joueur ID %d nous a quittés.\n", id_supprime);
+
+    // Décalage pour supprimer l'élément du tableau
+    for (int i = index; i < nb_joueur_connecte - 1; i++) {
+        paire_connected[i] = paire_connected[i + 1];
+    }
+    
+    // On met à jour le nombre total de joueurs connectés
+    nb_joueur_connecte--;
+    
+    // NOTE : On ne touche pas aux .id des autres, ils restent intacts !
+    printf("[CARNET] Joueurs restants : %d\n", nb_joueur_connecte);
+    return id_supprime; // On retourne l'ID du joueur supprimé pour que tanou puisse faire son broadcast
+}
+
+
+// AJOUTE CETTE FONCTION : Pour dire Il est vivant !
+void actualiser_activite(struct sockaddr_in addr) {
+    for (int i = 0; i < nb_joueur_connecte; i++) {
+        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
+            paire_connected[i].addr.sin_port == addr.sin_port) {
+            paire_connected[i].dernier_vu = time(NULL); // On remet le chrono à zéro
+            return;
+        }
+    }
 }
