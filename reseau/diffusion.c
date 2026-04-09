@@ -173,22 +173,6 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
-        case 4: // Reponses des autres joueurs (discovery_connect)
-            // Si je suis en train de chercher un ID, je note sa réponse
-            if (temps_debut_recherche > 0) {
-                uint8_t id_recu = enveloppe_recue->id_expediteur;
-                if (id_recu < 10) {
-                    ids_deja_pris[id_recu] = 1; // Ajouter l'ID dans le tableau
-                    printf("[P2P] Entendu ! L'ID %d est déjà pris.\n", id_recu);
-                }
-            }
-            free(Buffer);
-            return NULL;
-
-        case 5: /*Type pour initier une premiere connexion a fin d'obtenir un id*/
-
-        case 6: /* Reponse avec les ids */
-
     default:    /*Message inconnu*/
         printf("[ALERTE] Type de message inconnu reçu.\n");
         free(Buffer);
@@ -223,7 +207,7 @@ void demarrer_recherche_id(int mon_socket_udp) {
     }
 }
 
-// Fonction pour vérifier si le chrono est écoulé et s'attribuer un ID
+// Fonction pour vérifier si le chrono est écoulé et s'attribuer un ID (plus necessaire)
 int verifier_fin_recherche_id() {
     // Si on cherche un ID et que 500ms se sont écoulées...
     if (temps_debut_recherche > 0 && (get_time() - temps_debut_recherche > 500)) {
