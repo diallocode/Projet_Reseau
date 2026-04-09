@@ -32,7 +32,7 @@ if __name__ == '__main__':
         general1 = data.get("general")
         all_units = data.get("my_units")
 
-        battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
+        battlefield = Battlefield(COLS, ROWS, all_units, network_manager, generate_heightmap(COLS, ROWS))
 
         # Initialisation de la vue (Console ou GUI)
         if args.terminal:

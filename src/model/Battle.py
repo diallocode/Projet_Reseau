@@ -41,21 +41,15 @@ class Battle:
    #                           MAIN SIMULATION
    # ===================================================================
    def start(self,is_tourney=False):
-    
-
        if self.view and hasattr(self.view, 'screen'):  # GUI has screen attribute
            # Pygame already initialized in GUI.__init__
            pass
-
-
-
        running = True
        clock = pygame.time.Clock()
        dt = 0  # Delta time (time between frames, in milliseconds)
 
        # ==================== Main real-time loop ====================
        while running:
-
            if self.view and hasattr(self.view, 'clock'):  # GUI has pygame.Clock
                dt =  self.view.clock.tick(FPS) / 1000  # Delta time in seconds
              
@@ -65,13 +59,11 @@ class Battle:
                dt = 1.0 / FPS
            else:
                # Without view mode
-               dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode
-              
+               dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode    
            for msg in self.network_manager.get_messages():
                if msg["type"] == "handshake":
                    print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
                    self.battlefield._handle_new_player(msg)
-                   #exit() # Debug: Stop after handshake to verify correctness
                elif msg["type"] == "update":
                    print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                    self.battlefield._handle_unit_update(msg)
@@ -81,23 +73,11 @@ class Battle:
            self.handle_event()
         
            if not self.paused:
-              
                for _ in range(self.speed):
                    self.general.play(self.battlefield)
                    self.battlefield.update(self.general,dt)
-                  
-                   # --- EXPÉDITION VERS LE RÉSEAU ---
-                   if self.battlefield.outgoing_network_events:
-                       for event in self.battlefield.outgoing_network_events:
-                           print(f"Envoi d'un événement réseau : {event}")
-                           self.network_manager.send_to_c(event)
-                      
-                       # On vide la boîte d'envoi pour la prochaine frame !
-                       self.battlefield.outgoing_network_events.clear()
-                       
                if self.view:
                    self.view.update()
-        
        if self.view:
            exit_loop = True
            while exit_loop:
@@ -110,10 +90,6 @@ class Battle:
                        if event.key == pygame.K_ESCAPE:
                            exit_loop = False
                self.view.update()
-
-
-
-
 
    def handle_event(self):
        """
@@ -131,10 +107,7 @@ class Battle:
        if not self.view or not hasattr(self.view, 'screen'):
            return
 
-
-
        keys = pygame.key.get_pressed()
-
 
        for event in pygame.event.get():
            if event.type == pygame.QUIT:

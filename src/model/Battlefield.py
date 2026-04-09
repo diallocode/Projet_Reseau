@@ -1,7 +1,7 @@
 import math
 import random
 from Constant import UNIT_RADIUS
-
+from Network.NetworkManager import NetworkManager
 
 class Battlefield:
     """
@@ -17,7 +17,7 @@ class Battlefield:
         Dictionnaire mapping army_id -> Army.
     """
 
-    def __init__(self, width: float, height: float, troupes: dict, heightmap=None) -> None:
+    def __init__(self, width: float, height: float, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
         """
         Initializes a continuous battlefield.
 
@@ -37,8 +37,7 @@ class Battlefield:
         self.height = height
         self.heightmap = heightmap
         self.create_troupe(troupes)
-        
-        self.outgoing_network_events = []
+        self.network_manager = network_manager
         self.diplomacy = {}         # New attribute for diplomacy management
 
     def set_relationship(self, player1_id, player2_id, relationship):
@@ -278,7 +277,7 @@ class Battlefield:
             new_unit.hp = u_data["hp"]
             new_unit.network_owner = player_id 
             new_unit.battlefield = self
-            print(f"New ")
+           
             
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
@@ -341,4 +340,4 @@ class Battlefield:
     
     def push_network_event(self, event_data):
         print(f"Préparation d'un événement réseau : {event_data}")
-        self.outgoing_network_events.append(event_data)
+        self.network_manager.send_to_c(event_data)
