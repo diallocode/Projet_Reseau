@@ -9,7 +9,11 @@ class ScenarioMaker:
         self.scenario = scenario
         self.iaName = iaName
         self.player_id = player_id
-
+        self.network_data = {
+            "type": "handshake",
+            "player_id": self.player_id,
+            "units": []
+        }
         self.units_factory = UnitsFactory()
         self.all_units  = {}
         self.positions= {}
@@ -19,11 +23,7 @@ class ScenarioMaker:
         self.general = self.create_generals()
         self.network_manager = network_manager
         
-        self.network_data = {
-            "type": "handshake",
-            "player_id": self.player_id,
-            "units": []
-        }
+        
         
         self.network_manager.send_message(self.network_data)
 
