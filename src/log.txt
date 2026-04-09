@@ -1,0 +1,10 @@
+pygame 2.5.2 (SDL 2.30.0, Python 3.12.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Initialisation du pont réseau IPC...
+Initialisation locale de l'ID joueur...
+ID attribué (PID) : 32311
+[Network] 41 octets envoyés à C : {'type': 'connected', 'player_id': 32311}
+Running battle with Smart Strategy as Player 32311
+Please enter a scenario
+Format : {"Crossbowman":10, "Pikeman":10,"Knight":10,"startLine":55,"startCol":50,"armyDistance":10, "unitPerCol":10}
+->
