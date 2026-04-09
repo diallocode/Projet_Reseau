@@ -26,7 +26,7 @@ if __name__ == '__main__':
         print(f"Running battle with {args.AI} Strategy as Player {player_id}")
 
         # On passe le fameux player_id au ScenarioMaker !
-        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI)
+        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI, network_manager)
         data = scenario_maker.get_data()
 
         general1 = data.get("general")
