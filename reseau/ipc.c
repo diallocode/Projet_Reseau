@@ -24,7 +24,7 @@ uint32_t obtenir_type_message(const char *donnee_json) {
             else if (strcmp(type_item->valuestring, "update") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
             }else if (strcmp(type_item->valuestring, "acknowledgment") == 0) {
-                type_numerique = 0; // Type 0 pour les damage
+                type_numerique = 3; // Juste un signal de reception
             }
         }
         
