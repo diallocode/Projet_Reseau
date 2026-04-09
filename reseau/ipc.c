@@ -252,9 +252,10 @@ int main() {
                 message_systeme(reseau_fd, 2, 0, joueurs_a_ping[i].addr);
             }
             
+            // Affichage de contrôle toutes les 3 secondes
+            afficher_liste_joueurs();
             dernier_ping_envoye = temps_actuel; // On redémarre le chrono !
         }
-
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
         int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);

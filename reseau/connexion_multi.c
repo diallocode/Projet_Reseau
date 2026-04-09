@@ -128,3 +128,33 @@ void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
        }
    }
 }
+
+
+
+void afficher_liste_joueurs() {
+    int nb_joueurs = 0;
+    
+    // On récupère le tableau et le nombre exact de joueurs
+    struct paire *joueurs = get_connected_peers(&nb_joueurs);
+
+    printf("\n=== LISTE DES JOUEURS CONNECTÉS (%d) ===\n", nb_joueurs);
+    
+    if (nb_joueurs == 0) {
+        printf(" -> Aucun joueur distant dans le carnet.\n");
+    } else {
+        long temps_actuel = time(NULL);
+        
+        for (int i = 0; i < nb_joueurs; i++) {
+            // Conversion de l'IP binaire en chaîne de caractères classique (ex: "192.168.1.10")
+            char *ip = inet_ntoa(joueurs[i].addr.sin_addr);
+            // Conversion du port binaire en entier classique
+            int port = ntohs(joueurs[i].addr.sin_port);
+            // Calcul du temps écoulé depuis le dernier message reçu
+            int inactif_depuis = temps_actuel - joueurs[i].dernier_vu;
+
+            printf(" [%d] Joueur ID : %d | IP : %s | Port : %d | Inactif depuis : %ds\n", 
+                   i, joueurs[i].id, ip, port, inactif_depuis);
+        }
+    }
+    printf("==========================================\n\n");
+}
