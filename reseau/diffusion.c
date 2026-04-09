@@ -3,8 +3,8 @@
 #include "connexion_multi.h"
 
 
-static int ids_deja_pris[10] = {0}; // Tableau rempli de 0
-static long temps_debut_recherche = 0; // Chronomètre
+/*static int ids_deja_pris[10] = {0}; // Tableau rempli de 0
+static long temps_debut_recherche = 0; // Chronomètre*/
 
 
 // Le point de départ de ta file d'attente
@@ -123,9 +123,10 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 
     add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
-    actualiser_activite(addr_distant);  // On remet son temps a 0
+    //actualiser_activite(addr_distant);  // On remet son temps a 0
     // recuperation de l'enveloppe
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
+    actualiser_activite(addr_distant, enveloppe_recue->id_expediteur);
 
     // Conversion dans le bon format
     uint32_t seq_recu = ntohl(enveloppe_recue->num_sequence);
@@ -164,14 +165,14 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
-        case 3: // Premiere tentative de connexion (connect)
+        /*case 3: // Premiere tentative de connexion (connect)
             printf("[P2P] Requête de découverte reçue de %s:%d\n", inet_ntoa(addr_distant.sin_addr), ntohs(addr_distant.sin_port));
             if (mon_id_joueur > 0) {
                 // Je renvoie un Type 6 à l'expéditeur. Mon ID se mettra automatiquement dans l'en-tête.
                 message_systeme(reseau_fd, 4, 0, addr_distant);
             }
             free(Buffer);
-            return NULL;
+            return NULL;*/
 
     default:    /*Message inconnu*/
         printf("[ALERTE] Type de message inconnu reçu.\n");
@@ -185,7 +186,7 @@ char *diffusion_message_sens2(int reseau_fd){
 
 
 
-// Fonction pour lancer la recherche d'ID
+/*// Fonction pour lancer la recherche d'ID
 void demarrer_recherche_id(int mon_socket_udp) {
     printf("[P2P] Démarrage de la recherche d'ID\n");
     
@@ -227,7 +228,7 @@ int verifier_fin_recherche_id() {
     }
     
     return -1; // La recherche tourne encore
-}
+}*/
 
 
 
