@@ -65,8 +65,9 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int typ
 
             nouveau_colis->suivant = file_attente;
             file_attente = nouveau_colis;
-
+        }
     }
+
     free(Buffer);
     return 0;
 }
