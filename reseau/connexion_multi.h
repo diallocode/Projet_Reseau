@@ -38,7 +38,7 @@ int remove_peer(int index);
 //qelqu'un qui se deconecte via @ip et port
 void disconnect_paire_by_addr(struct sockaddr_in addr);
 //verification des @ inactives
-int check_and_get_inactive_paire(int timeout_sec);
+int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out);
 
 
 #endif // OUMAR_H
