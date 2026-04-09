@@ -37,9 +37,10 @@ class NetworkManager:
             try:
                 # On attend la réponse
                 data, _ = self.socket.recvfrom(65535)
+                print("bha un truc quoi!")
                 msg = json.loads(data.decode('utf-8'))
                 
-                if msg.get("type") == "init":
+                if msg.get("type") == "connected":
                     self.my_player_id = msg.get("player_id")
                     print(f"ID reçu avec succès : {self.my_player_id}")
                     return self.my_player_id # On retourne l'ID
