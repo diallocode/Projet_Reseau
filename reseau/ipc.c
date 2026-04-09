@@ -19,13 +19,23 @@ uint8_t obtenir_type_message(const char *donnee_json) {
         
         if (cJSON_IsString(type_item)) {
             if (strcmp(type_item->valuestring, "init") == 0) {
-                type_numerique = 3; // Type 3 pour l'initialisation
+                type_numerique = 0; // Type 0 pour l'initialisation
             } 
             else if (strcmp(type_item->valuestring, "move") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
+            }else if (strcmp(type_item->valuestring, "damage") == 0) {
+                type_numerique = 0; // Type 0 pour les damage
             }
             else if (strcmp(type_item->valuestring, "shoot") == 0) {
-                type_numerique = 4; // Type 4 pour les tirs
+                type_numerique = 0; // Type 0 pour les tirs
+            }else if (strcmp(type_item->valuestring, "connect") == 0) {
+                type_numerique = 3; // Type 3 pour la tentative de connexion
+            }else if (strcmp(type_item->valuestring, "DISCOVERY") == 0) {
+                type_numerique = 5; 
+            }else if (strcmp(type_item->valuestring, "DISCOVERY_REPLY") == 0) {
+                type_numerique = 6; 
+            }else if (strcmp(type_item->valuestring, "connected") == 0) {
+                type_numerique = 4;
             }
             //  ajouter d'autres types ici plus tard
         }
