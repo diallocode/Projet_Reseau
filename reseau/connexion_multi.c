@@ -88,7 +88,7 @@ int remove_peer(int index) {
     if (index < 0 || index >= nb_joueur_connecte) return -1;
     // 1. On sauvegarde l'ID avant qu'il ne disparaisse
     int id_supprime = paire_connected[index].id;
-    printf("[CARNET] Le joueur ID %d nous a quittés.\n", id_supprime);
+    printf("[CARNET] Le joueur ID %d a ete supprime de la liste de diffusion.\n", id_supprime);
 
     // Décalage pour supprimer l'élément du tableau
     for (int i = index; i < nb_joueur_connecte - 1; i++) {
