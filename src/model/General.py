@@ -37,13 +37,12 @@ class General:
         Recover unit in camp [(ID-1)*1000, ID*1000[
         """
 
-        lower_bound = (self.id - 1) * 1000
-        upper_bound = self.id * 1000
-
+        lower_bound = (self.id) * 1000
+        upper_bound = lower_bound + 999
         # Global filter of unit dictionary
         return [
             unit for uid, unit in battlefield.troupes.items()
-            if lower_bound <= uid < upper_bound and unit.is_alive()
+            if lower_bound <= uid <= upper_bound and unit.is_alive()
         ]
 
 

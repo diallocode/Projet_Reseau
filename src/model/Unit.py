@@ -37,6 +37,10 @@ class Unit(ABC):
     battlefield:Battlefield = None
     
     last_attacker: "Unit" = None    # Unit that last attacked this unit (for Braindead strategy)
+    
+    # --- NOUVEAUX ATTRIBUTS RÉSEAU ---
+    network_owner: int = 0
+    network_locked: bool = False
 
     # ------------------------------------------------------------------
     # CORE STATUS & UTILITY
@@ -55,6 +59,18 @@ class Unit(ABC):
             self.current_order = None
             self.target_unit = None
             self.target_pos = None
+        
+        # --- NOUVEAU : On signale les dégâts ---
+        if self.battlefield:
+            self.battlefield.push_network_event({
+                "type": "update",
+                "id": self.id,
+                "hp": self.hp,
+                "network_owner": self.network_owner,
+                "x": self.position[0],
+                "y": self.position[1]
+            })
+        print(f"Unit {self.id} took {damage:.1f} damage from Unit {attacker.id if attacker else 'Unknown'}, new HP: {self.hp}")
 
     def set_order(self, order_type: str, target=None, target_pos=None):
         """Assign a new 'move' or 'attack' command with associated targets."""
@@ -71,6 +87,9 @@ class Unit(ABC):
     # ------------------------------------------------------------------
     def update(self, dt):
         """Advance unit logic (cooldowns, movement, or combat) based on elapsed time."""
+        
+        #if self.network_locked or self.network_owner != my_player_id:
+        #    return
         if not self.is_alive():
             return
 
@@ -80,6 +99,7 @@ class Unit(ABC):
 
         # Order execution
         if self.current_order == "move":
+            print(f"Unit {self.id} executing move order towards {self.target_pos}")
             self._update_move(dt)
 
         elif self.current_order == "attack":
@@ -169,6 +189,7 @@ class Unit(ABC):
         """
         Applique le mouvement si la position est valide et libre.
         """
+        print(f"Je suis dans try_move pour l'unité {self.id}, nouvelle position proposée: {new_pos}")
         # Safety: The position must be within limits.
         if not self.battlefield.is_valid_position(new_pos):
             return False
@@ -184,6 +205,18 @@ class Unit(ABC):
             return False # We stop no matter what (ally or enemy)
             
         self.position = new_pos
+        
+        if self.battlefield:
+            print(f"UUnit battefield existing: {self.battlefield}")
+            self.battlefield.push_network_event({
+                "type": "update",
+                "id": self.id,
+                "hp": self.hp,
+                "network_owner": self.network_owner,
+                "x": self.position[0],
+                "y": self.position[1]
+            })
+        print(f"[Class Unit] Unit {self.id} moved to {self.position}")
         return True
 
     def is_enemy(self, other: "Unit") -> bool:
@@ -248,6 +281,9 @@ class Unit(ABC):
 
         return raw_damage
 
+    #def __repr__(self):
+    #    """Return a readable summary of the unit for debugging."""
+    #    return f"{self.name} {self.id} ({self.hp}hp @ {self.position})"
     def __repr__(self):
         """Return a readable summary of the unit for debugging."""
-        return f"{self.name} {self.id} ({self.hp}hp @ {self.position})"
+        return f"Unit {self.id} ({self.name}, {self.hp}hp @ {self.position} NetworkOwner: {self.network_owner})"

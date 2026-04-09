@@ -151,7 +151,7 @@ class GUI(View):
             color =DARK
 
             # Use unit ID to determine team color
-            color = RED if unit.id //1000 == self.generaux[0].id else BLUE
+            color = RED if unit.id // 1000 == self.generaux[0].id else BLUE
 
             if not unit.is_alive():
                 continue

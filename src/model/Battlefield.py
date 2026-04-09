@@ -1,6 +1,7 @@
 import math
 import random
 from Constant import UNIT_RADIUS
+from Network.NetworkManager import NetworkManager
 
 class Battlefield:
     """
@@ -16,7 +17,7 @@ class Battlefield:
         Dictionnaire mapping army_id -> Army.
     """
 
-    def __init__(self, width: float, height: float, troupes: dict, heightmap=None) -> None:
+    def __init__(self, width: float, height: float, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
         """
         Initializes a continuous battlefield.
 
@@ -36,8 +37,14 @@ class Battlefield:
         self.height = height
         self.heightmap = heightmap
         self.create_troupe(troupes)
+        self.network_manager = network_manager
+        self.diplomacy = {}         # New attribute for diplomacy management
 
-
+    def set_relationship(self, player1_id, player2_id, relationship):
+        """Définit la relation (ex: alliance) entre deux joueurs."""
+        if player1_id not in self.diplomacy:
+            self.diplomacy[player1_id] = {}
+        self.diplomacy[player1_id][player2_id] = relationship
 
     # ==========================================================
     #                   UNIT MANAGEMENT
@@ -104,24 +111,35 @@ class Battlefield:
     # ==========================================================
     def get_enemy_units(self, unit):
         """
-        Return enemies and following the next rules for ID :
-        - If unit_id < 1000 : enemies have id >= 1000
-        - If unit_id >= 1000 : enemies have id < 1000
+        Retourne la liste des ennemis en fonction de l'appartenance réseau
+        et des alliances diplomatiques en cours.
         """
         if unit is None:
             return []
 
-        # Determine the camp of unit (0, 1, 2...)
-        unit_segment = unit.id // 1000
+        # On utilise notre nouvel attribut réseau !
+        my_owner = getattr(unit, 'network_owner', unit.id // 1000)
         enemies = []
 
         for target_id, target_unit in self.troupes.items():
             if not target_unit.is_alive():
                 continue
+            
+            if target_unit.id // 1000 == my_owner:
+                continue  # Skip units from the same player
 
-            # If the target is not in the same camp
-            target_segment = target_id // 1000
-            if unit_segment != target_segment:
+            #target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
+
+            # Résolution diplomatique
+            # Par défaut, dans un jeu de guerre sauvage, les inconnus sont des ennemis
+            relationship = "enemy" 
+            
+            # Si on a défini une relation spécifique avec ce joueur, on l'applique
+            #if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
+            #    relationship = self.diplomacy[my_owner][target_owner]
+
+            # Si c'est bien un ennemi, on l'ajoute à la liste des cibles
+            if relationship == "enemy":
                 enemies.append(target_unit)
 
         return enemies
@@ -148,19 +166,19 @@ class Battlefield:
     def _update_single_unit(self, unit, dt):
         if not unit.is_alive():
             return True
+        print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
         unit.update(dt)
         if unit.position:
             unit.position = self.clamp_position(unit.position)
         return not unit.is_alive()
 
     # More nested list paths general->army->units
-    def update(self, dt):
+    def update(self,general, dt):
         """
         Met à jour toutes les unités directement depuis le dictionnaire.
         """
         # List of units for random mixing
-        all_units = list(self.troupes.values())
-        random.shuffle(all_units)
+        all_units = general.get_my_units(self)
 
         ids_to_remove = []
         for unit in all_units:
@@ -234,3 +252,92 @@ class Battlefield:
             if math.hypot(dx, dy) < UNIT_RADIUS*2:
                 return False
         return True
+
+    def _handle_new_player(self, data):
+        """
+        Intègre l'armée d'un nouvel arrivant sur la carte locale.
+        data ressemble à : {"type": "handshake", "player_id": 2, "units": [...]}
+        """
+        player_id = data["player_id"]
+        remote_units = data["units"]
+        from util.UnitsFactory import UnitsFactory
+
+        factory = UnitsFactory()
+
+        for u_data in remote_units:
+            unit_id = u_data["id"] 
+            unit_type = u_data["type"]
+            
+            # Création de l'unité
+            new_unit = factory.create_unit(unit_id, unit_type)
+            print(f"Création de l'unité {unit_id} de type {unit_type} pour le joueur {player_id}")
+            
+            # Forçage de l'état réseau
+            new_unit.position = (u_data["x"], u_data["y"])
+            new_unit.hp = u_data["hp"]
+            new_unit.network_owner = player_id 
+            new_unit.battlefield = self
+           
+            
+            # Ajout au champ de bataille (risque de collision)
+            self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
+            
+        print(f"L'armée du joueur {player_id} a rejoint la bataille !")
+        
+    def _handle_disconnect(self, data):
+        """
+        Nettoie le champ de bataille lorsqu'un joueur se déconnecte.
+        """
+        player_id = data["player_id"]
+        
+      
+        ids_to_remove = [
+            uid for uid, unit in self.battlefield.troupes.items() 
+            if getattr(unit, 'network_owner', -1) == player_id
+        ]
+        
+        # On utilise la méthode existante pour les retirer proprement
+        for uid in ids_to_remove:
+            self.battlefield.remove_unit(uid)
+            
+        print(f"Le Joueur {player_id} s'est retiré ! {len(ids_to_remove)} unités ont fui le champ de bataille.")
+        
+        
+    def _handle_unit_update(self, msg):
+        """
+        Met à jour l'état d'une unité sur la carte locale à partir d'un message réseau.
+        Format attendu : {"type": "update", "id": 2010, "hp": 45, "network_owner": 1, "x": 50.5, "y": 42.0}
+        """
+        unit_id = msg.get("id")
+
+        # Vérification de sécurité : l'unité existe-t-elle sur notre carte ?
+        if unit_id not in self.troupes:
+            # Optionnel : Tu peux décommenter le print pour débugger
+            # print(f"[Réseau] Ignoré : Mise à jour pour l'unité inconnue ou morte ID {unit_id}")
+            return
+
+        # Récupération de l'unité cible
+        unit = self.troupes[unit_id]
+
+        # Mise à jour des valeurs (avec fallback sur les valeurs actuelles si manquantes)
+        if "hp" in msg:
+            unit.hp = msg["hp"]
+        
+        if "network_owner" in msg:
+            unit.network_owner = msg["network_owner"]
+            
+        if "x" in msg and "y" in msg:
+            unit.position = (msg["x"], msg["y"])
+
+        # Nettoyage immédiat si le réseau nous informe de sa mort
+        if unit.hp <= 0:
+            unit.hp = 0
+            # On purge ses ordres pour qu'elle arrête de bouger/attaquer instantanément
+            unit.current_order = None
+            unit.target_unit = None            
+            self.remove_unit(unit_id)
+    
+    def push_network_event(self, event_data):
+        print(f"Préparation d'un événement réseau : {event_data}")
+        self.network_manager.send_to_c(event_data)

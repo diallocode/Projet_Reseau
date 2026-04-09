@@ -28,7 +28,7 @@ PAUSE_OVERLAY_COLOR = (0, 0, 0, 120)
 # BattleTournament' Scenarios
 DEFAULT_SCENARIOS = [
    
-    {"Crossbowman":20, "Pikeman":0,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
+    {"Crossbowman":5, "Pikeman":5,"Knight":5,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":20,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":0,"Knight":20,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     
@@ -47,7 +47,7 @@ DEFAULT_SCENARIOS = [
 
 ELEVATION_JSON_FILEPATH = "Elevation.json"
 STATS_FILEPATH = "Stats_Units.csv"
-STATS_BONUS_FILEPATH = "model/Stats_Bonus.csv"
+STATS_BONUS_FILEPATH = "src/model/Stats_Bonus.csv"
 IMAGE_FILES = {
             "Knight_1": "../../img/Sprites/Knight/Red/right.png",
             "Knight_2": "../../img/Sprites/Knight/Blue/left.png",
@@ -63,3 +63,8 @@ SAVE_FOLDER = "../save/"
 LOGS_FOLDER = "../save/logs/"
 REPORTS_FOLDER = "../save/reports/"
 PLOTS_FOLDER = "../save/plots/"
+
+
+
+HOST = "127.0.0.1"
+PORT =  5001
