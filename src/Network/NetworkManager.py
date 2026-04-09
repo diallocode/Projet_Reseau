@@ -3,6 +3,7 @@ import socket
 import queue
 import json
 from Constant import HOST, PORT
+import os
 
 MYPORT = 5003
 
@@ -29,24 +30,31 @@ class NetworkManager:
         self.listener_thread = threading.Thread(target=self.listen_for_messages, daemon=True)
         self.listener_thread.start()
 
+
     def wait_initialization(self):
-        print("En attente du processus C pour recevoir l'ID...")
-        self.send_to_c({"type": "connect"})
-        
-        while self.my_player_id is None: # On boucle tant qu'on n'a pas l'ID
-            try:
-                # On attend la réponse
-                data, _ = self.socket.recvfrom(65535)
-                print("bha un truc quoi!")
-                msg = json.loads(data.decode('utf-8'))
-                
-                if msg.get("type") == "connected":
-                    self.my_player_id = msg.get("player_id")
-                    print(f"ID reçu avec succès : {self.my_player_id}")
-                    return self.my_player_id # On retourne l'ID
-            except Exception as e:
-                print(f"Erreur durant l'initialisation : {e}")
-                # Optionnel: ajouter un petit sleep ou une limite d'essais
+        print("Initialisation locale de l'ID joueur...")
+        try:
+            # 1. Tentative de récupération du PID
+            id_joueur = os.getpid()
+            
+            # 2. Vérification de la validité de l'ID
+            if id_joueur is None or id_joueur <= 0:
+                raise ValueError("L'OS a renvoyé un PID invalide.")
+
+            # 3. Assignation
+            self.my_player_id = id_joueur
+            print(f"ID attribué (PID) : {self.my_player_id}")
+
+            # 4. Notification au processus C
+            # Même si l'ID est local, le C doit savoir qui on est pour nous router les messages
+            self.send_to_c({"type": "connected", "player_id": self.my_player_id})
+
+        except OSError as e:
+            print(f"Erreur système lors de la récupération du PID : {e}")
+            self.my_player_id = 0 # Valeur par défaut pour éviter 'None'
+        except Exception as e:
+            print(f"Erreur inattendue : {e}")
+            self.my_player_id = 0
     def listen_for_messages(self):
         while True:
             try:
