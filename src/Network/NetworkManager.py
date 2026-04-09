@@ -4,6 +4,8 @@ import queue
 import json
 from Constant import HOST, PORT
 
+MYPORT = 5003
+
 class NetworkManager:
     def __init__(self, host=HOST, port=PORT): 
         self.message_queue = queue.Queue()
@@ -17,6 +19,9 @@ class NetworkManager:
         # On définit l'adresse du C
         self.c_address = (host, port)
 
+        # On bind notre socket à MYPORT pour recevoir les messages du C
+        self.socket.bind((HOST, MYPORT))
+
         # 2. Handshake (Phase bloquante)
         self.wait_initialization()
 
@@ -26,17 +31,21 @@ class NetworkManager:
 
     def wait_initialization(self):
         print("En attente du processus C pour recevoir l'ID...")
-        # On envoie un petit "Hello" au C pour qu'il connaisse notre port
-        self.send_to_c({"type": "hello"})
+        self.send_to_c({"type": "connect"})
         
-        # On attend la réponse (Buffer de 65k pour être large)
-        data, _ = self.socket.recvfrom(65535)
-        msg = json.loads(data.decode('utf-8'))
-        
-        if msg.get("type") == "init":
-            self.my_player_id = msg.get("player_id")
-            print(f"ID reçu : {self.my_player_id}")
-
+        while self.my_player_id is None: # On boucle tant qu'on n'a pas l'ID
+            try:
+                # On attend la réponse
+                data, _ = self.socket.recvfrom(65535)
+                msg = json.loads(data.decode('utf-8'))
+                
+                if msg.get("type") == "init":
+                    self.my_player_id = msg.get("player_id")
+                    print(f"ID reçu avec succès : {self.my_player_id}")
+                    return self.my_player_id # On retourne l'ID
+            except Exception as e:
+                print(f"Erreur durant l'initialisation : {e}")
+                # Optionnel: ajouter un petit sleep ou une limite d'essais
     def listen_for_messages(self):
         while True:
             try:
