@@ -115,6 +115,7 @@ int main() {
 
     printf("Processus C prêt !\n");
 
+    long dernier_ping_envoye = get_time();
 
     while(1){
         fd_set fds;
@@ -158,12 +159,15 @@ int main() {
                    }
                    cJSON_Delete(json);
                }
-               uint8_t type_message = obtenir_type_message(buffer);
-               // Tous les autres messages → diffusion normale
-               printf("Type_message_recu :  %s\n",json);
-               diffusion_message_sens1(buffer, reseau_fd, type_message);
-               printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
 
+               else {
+                    uint8_t type_message = obtenir_type_message(buffer);
+                    // Tous les autres messages → diffusion normale
+                    diffusion_message_sens1(buffer, reseau_fd, type_message);
+                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+
+               }
+              
 
                 /*if (type_message == 3) {
                     // Python nous donne son ID → vérifier s'il est libre
@@ -232,6 +236,24 @@ int main() {
         }
 
         verifier_retransmissions(reseau_fd);
+
+        // ==========================================
+        // ENVOI DU HEARTBEAT (PING)
+        // ==========================================
+        long temps_actuel = get_time();
+        if (temps_actuel - dernier_ping_envoye > 3000) { // Toutes les 3 secondes (3000 ms)
+            
+            int nb_joueurs_ping = 0;
+            struct paire *joueurs_a_ping = get_connected_peers(&nb_joueurs_ping);
+
+            for (int i = 0; i < nb_joueurs_ping; i++) {
+                // On envoie un message système de Type 2 (Ping) à chaque joueur
+                // Le paramètre num_seq est à 0 car ce n'est pas un message vital à retransmettre
+                message_systeme(reseau_fd, 2, 0, joueurs_a_ping[i].addr);
+            }
+            
+            dernier_ping_envoye = temps_actuel; // On redémarre le chrono !
+        }
 
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
