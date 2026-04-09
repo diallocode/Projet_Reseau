@@ -167,7 +167,7 @@ class Battlefield:
     def _update_single_unit(self, unit, dt):
         if not unit.is_alive():
             return True
-        print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
+        #print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
         unit.update(dt)
         if unit.position:
             unit.position = self.clamp_position(unit.position)
