@@ -160,7 +160,7 @@ int main() {
                }
                uint8_t type_message = obtenir_type_message(buffer);
                // Tous les autres messages → diffusion normale
-               printf("Type message%u\n",type_message);
+               printf("Type_message_recu :  %s\n",json);
                diffusion_message_sens1(buffer, reseau_fd, type_message);
                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
 
