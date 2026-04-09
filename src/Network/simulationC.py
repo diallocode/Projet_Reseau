@@ -28,13 +28,8 @@ def start_mock_c():
         "type": "handshake",
         "player_id": 2,
         "units": [
-<<<<<<< HEAD
-            {"id": i, "type": "Knight", "x": 56 + i, "y": 42.0, "hp": 100} 
-            for i in range(2000,2000+5) # On génère 5 unités d'un coup
-=======
             {"id": i + 2000, "type": "Knight", "x": 50 + i, "y": 42.0, "hp": 100} 
             for i in range(5) # On génère 5 unités d'un coup
->>>>>>> wann
         ]
     }
     sock.sendto(json.dumps(units_config).encode(), addr)
@@ -43,11 +38,7 @@ def start_mock_c():
     # 4. Simuler un mouvement simple
     time.sleep(2)
     for i in range(5):
-<<<<<<< HEAD
-        move_msg = {"type": "update","id": i, "hp": 45, "network_owner": 2, "x": 50+i,"y": 40.0}
-=======
         move_msg = {"type": "update","id": i + 2000, "hp": 45, "network_owner": 2, "x": 50.0+i,"y": 40.0}
->>>>>>> wann
         sock.sendto(json.dumps(move_msg).encode(), addr)
         print("Envoyé à Python: Un mouvement d'unité")
         time.sleep(2) # Pause entre les mouvements 
