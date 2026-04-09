@@ -29,11 +29,11 @@ def start_mock_c():
         "player_id": 1,
         "units": [
             {"id": i, "type": "Knight", "x": 10.5 + i, "y": 20.0, "hp": 100} 
-            for i in range(5) # On génère 50 unités d'un coup
+            for i in range(5) # On génère 5 unités d'un coup
         ]
     }
     sock.sendto(json.dumps(units_config).encode(), addr)
-    print(f"Envoyé à Python: 50 unités générées ({len(json.dumps(units_config))} octets)")
+    print(f"Envoyé à Python: 5 unités générées ({len(json.dumps(units_config))} octets)")
 
     # 4. Simuler un mouvement simple
     time.sleep(2)
@@ -41,6 +41,7 @@ def start_mock_c():
         move_msg = {"type": "update","id": i, "hp": 45, "network_owner": 1, "x":15.0+i,"y": 25.0}
         sock.sendto(json.dumps(move_msg).encode(), addr)
         print("Envoyé à Python: Un mouvement d'unité")
+        time.sleep(2) # Pause entre les mouvements 
 
 if __name__ == "__main__":
     start_mock_c()

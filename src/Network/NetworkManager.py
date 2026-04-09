@@ -52,11 +52,12 @@ class NetworkManager:
 
     def send_to_c(self, message):
         try:
-            # En UDP on utilise sendto vers l'adresse du C
             data = json.dumps(message).encode('utf-8')
-            self.socket.sendto(data, self.c_address)
+            # sendto retourne le nombre d'octets envoyés
+            sent_bytes = self.socket.sendto(data, self.c_address)
+            print(f"[Network] {sent_bytes} octets envoyés à C : {message}")
         except Exception as e:
-            print(f"Erreur envoi : {e}")
+            print(f"[Network] Erreur envoi : {e}")
             
     def get_messages(self):
         """
