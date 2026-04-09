@@ -107,7 +107,7 @@ char *diffusion_message_sens2(int reseau_fd){
     socklen_t addr_len = sizeof(addr_distant);      
 
     // Buffer de reception du paquet
-    int size_chaine_json = 2049;
+    int size_chaine_json = 10049;
     int TAILLE_PAQUET = size_chaine_json + sizeof(EnteteUDP); 
     char *Buffer = malloc(TAILLE_PAQUET);
     if(Buffer == NULL){

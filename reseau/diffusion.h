@@ -38,7 +38,7 @@ typedef struct
 typedef struct NoeudAttente {
     EnteteUDP entete;               // La copie de l'en-tête envoyé
     struct sockaddr_in dest;        // Destination du paquet
-    char payload[2048];             // La copie de ton JSON 
+    char payload[10048];             // La copie de ton JSON 
     long temps_envoi;               // Le chronomètre (pour savoir quand renvoyer)
     struct NoeudAttente *suivant;   // Le pointeur vers le colis suivant dans la liste !
 } NoeudAttente;
