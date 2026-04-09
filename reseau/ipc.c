@@ -28,10 +28,7 @@ uint8_t obtenir_type_message(const char *donnee_json) {
             }
             else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
-            }else if (strcmp(type_item->valuestring, "connected") == 0) {
-                type_numerique = 3;
             }
-            //  ajouter d'autres types ici plus tard
         }
         
         // on libère la mémoire avant de quitter !
@@ -134,7 +131,6 @@ int main() {
             perror("Erreur select");
             break;
         }
-
         
 
         // Python -> Reseau
@@ -144,16 +140,27 @@ int main() {
                 buffer[n] = '\0';
                 printf("[PYTHON] Reçu : %s\n", buffer);
 
-                uint8_t type_message = obtenir_type_message(buffer);
 
-                if (type_message == 3) {
-                    // C'est un "connected" → lancer la recherche d'ID
-                    printf("[CONNECT] Lancement de la recherche d'ID...\n");
-                } else {
-                    // Tous les autres messages → diffusion normale
-                    diffusion_message_sens1(buffer, reseau_fd, type_message);
-                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                // INTERCEPTION DE L'ID EN DUR 
+                cJSON *json = cJSON_Parse(buffer);
+                if (json != NULL) {
+                    cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
+                    
+                    // Si Python nous envoie son message de bienvenue ("init")
+                    if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
+                        cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
+                        if (cJSON_IsNumber(id_item)) {
+                            set_mon_id((uint8_t)id_item->valueint);     // Mise a jour de l'id
+                            printf("[SYSTÈME] Mon ID a été configuré en dur à : %d\n", id_item->valueint);
+                        }
+                    }
+                    cJSON_Delete(json);
                 }
+                uint8_t type_message = obtenir_type_message(buffer);
+                // Tous les autres messages → diffusion normale
+                diffusion_message_sens1(buffer, reseau_fd, type_message);
+                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                
             }
         }
 

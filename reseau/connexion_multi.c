@@ -105,11 +105,15 @@ int remove_peer(int index) {
 
 
 // AJOUTE CETTE FONCTION : Pour dire Il est vivant !
-void actualiser_activite(struct sockaddr_in addr) {
+void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
     for (int i = 0; i < nb_joueur_connecte; i++) {
         if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
             paire_connected[i].addr.sin_port == addr.sin_port) {
-            paire_connected[i].dernier_vu = time(NULL); // On remet le chrono à zéro
+            
+            paire_connected[i].dernier_vu = time(NULL); 
+            // NOUVEAU : On met à jour le carnet avec le vrai ID de l'adversaire !
+            paire_connected[i].id = vrai_id_joueur; 
+            
             return;
         }
     }

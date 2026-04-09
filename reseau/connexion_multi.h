@@ -40,7 +40,7 @@ void disconnect_paire_by_addr(struct sockaddr_in addr);
 //verification des @ inactives
 int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out);
 
-void actualiser_activite(struct sockaddr_in addr);
-
+// Ajoute le paramètre 'vrai_id_joueur'
+void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur);
 
 #endif // OUMAR_H

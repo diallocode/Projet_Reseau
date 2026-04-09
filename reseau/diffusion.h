@@ -23,7 +23,7 @@
 // Structure qui va envelopper le paquet a envoyer
 typedef struct
 {
-    uint8_t id_expediteur;     // L'identifiant du joueur
+    uint32_t id_expediteur;     // L'identifiant du joueur
     uint8_t type_message;      // Le type du message 
     uint32_t num_sequence;     // Le numero de suivie 
     uint16_t taille_payload;   // La taille des donnees JSON, pour lire le json (2 octets)
@@ -52,8 +52,6 @@ extern long get_time();
 extern void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteur);
 extern void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest);
 extern void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti);
-extern void demarrer_recherche_id(int mon_socket_udp);
-extern int verifier_fin_recherche_id();
 
 extern void set_mon_id(uint8_t id);
 
