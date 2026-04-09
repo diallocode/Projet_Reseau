@@ -2,13 +2,18 @@ from math import ceil
 from model.General import General
 from util.UnitsFactory import UnitsFactory
 from util.Functions import create_strategy
+from Network.NetworkManager import NetworkManager
 
 class ScenarioMaker:
-    def __init__(self, scenario, player_id,  iaName):
+    def __init__(self, scenario, player_id,  iaName, network_manager:NetworkManager):
         self.scenario = scenario
         self.iaName = iaName
         self.player_id = player_id
-
+        self.network_data = {
+            "type": "handshake",
+            "player_id": self.player_id,
+            "units": []
+        }
         self.units_factory = UnitsFactory()
         self.all_units  = {}
         self.positions= {}
@@ -16,6 +21,9 @@ class ScenarioMaker:
         self.create_positions()
         self.create_units()
         self.general = self.create_generals()
+        self.network_manager = network_manager
+        
+        self.network_manager.send_to_c(self.network_data)
 
     def create_positions(self):
         start_line = self.scenario["startLine"]
@@ -80,6 +88,15 @@ class ScenarioMaker:
                 
                 self.all_units[global_unit_id] = u1
                 local_unit_idx += 1
+                
+                self.network_data["units"].append({
+                    "id": global_unit_id,
+                    "type": u1.name,
+                    "x": u1.position[0],
+                    "y": u1.position[1],
+                    "hp": u1.hp,
+                    "network_owner": self.player_id
+                })
 
     def create_generals(self):
         strategy = create_strategy(self.iaName)

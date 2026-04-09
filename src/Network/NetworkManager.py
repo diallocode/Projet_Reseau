@@ -55,6 +55,7 @@ class NetworkManager:
         except Exception as e:
             print(f"Erreur inattendue : {e}")
             self.my_player_id = 0
+            
     def listen_for_messages(self):
         while True:
             try:

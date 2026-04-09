@@ -18,19 +18,19 @@ uint8_t obtenir_type_message(const char *donnee_json) {
         cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
         
         if (cJSON_IsString(type_item)) {
-            if (strcmp(type_item->valuestring, "init") == 0) {
+            if (strcmp(type_item->valuestring, "handshake") == 0) {
                 type_numerique = 0; // Type 0 pour l'initialisation
             } 
-            else if (strcmp(type_item->valuestring, "move") == 0) {
+            else if (strcmp(type_item->valuestring, "update") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
-            }else if (strcmp(type_item->valuestring, "damage") == 0) {
+            }else if (strcmp(type_item->valuestring, "acknowledgment") == 0) {
                 type_numerique = 0; // Type 0 pour les damage
             }
-            else if (strcmp(type_item->valuestring, "shoot") == 0) {
+            //else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
-            }else if (strcmp(type_item->valuestring, "connected") == 0) {
-                type_numerique = 3;
-            }
+            //else if (strcmp(type_item->valuestring, "connected") == 0) {
+                //type_numerique = 3;
+            //}
             //  ajouter d'autres types ici plus tard
         }
         
@@ -115,7 +115,7 @@ int main() {
 
     printf("Processus C prêt !\n");
 
-
+    long dernier_ping_envoye = get_time();
 
     while(1){
         fd_set fds;
@@ -142,9 +142,34 @@ int main() {
                 buffer[n] = '\0';
                 printf("[PYTHON] Reçu : %s\n", buffer);
 
-                uint8_t type_message = obtenir_type_message(buffer);
+            
 
-                if (type_message == 3) {
+                // INTERCEPTION DE L'ID EN DUR
+               cJSON *json = cJSON_Parse(buffer);
+               if (json != NULL) {
+                   cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
+                  
+                   // Si Python nous envoie son message de bienvenue ("init")
+                   if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
+                       cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
+                       if (cJSON_IsNumber(id_item)) {
+                           set_mon_id((uint32_t)id_item->valueint);     // Mise a jour de l'id
+                           printf("[SYSTÈME] Mon ID a été configuré en dur à : %d\n", id_item->valueint);
+                       }
+                   }
+                   cJSON_Delete(json);
+               }
+
+               else {
+                    uint8_t type_message = obtenir_type_message(buffer);
+                    // Tous les autres messages → diffusion normale
+                    diffusion_message_sens1(buffer, reseau_fd, type_message);
+                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+
+               }
+              
+
+                /*if (type_message == 3) {
                     // Python nous donne son ID → vérifier s'il est libre
                     cJSON *json = cJSON_Parse(buffer);
                     cJSON *id_item = cJSON_GetObjectItem(json, "player_id");
@@ -152,7 +177,7 @@ int main() {
                     if (id_item != NULL) {
                         int id_propose = id_item->valueint;
 
-                        // Vérifier si cet ID est déjà pris dans le carnet
+                       // Vérifier si cet ID est déjà pris dans le carnet
                         int id_deja_pris = 0;
                         int nb_pairs = 0;
                         struct paire *pairs = get_connected_peers(&nb_pairs);
@@ -186,7 +211,7 @@ int main() {
                 // Tous les autres messages → diffusion normale
                 diffusion_message_sens1(buffer, reseau_fd, type_message);
                 printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-            }
+            }*/
         }
     }
 
@@ -212,6 +237,25 @@ int main() {
 
         verifier_retransmissions(reseau_fd);
 
+        // ==========================================
+        // ENVOI DU HEARTBEAT (PING)
+        // ==========================================
+        long temps_actuel = get_time();
+        if (temps_actuel - dernier_ping_envoye > 3000) { // Toutes les 3 secondes (3000 ms)
+            
+            int nb_joueurs_ping = 0;
+            struct paire *joueurs_a_ping = get_connected_peers(&nb_joueurs_ping);
+
+            for (int i = 0; i < nb_joueurs_ping; i++) {
+                // On envoie un message système de Type 2 (Ping) à chaque joueur
+                // Le paramètre num_seq est à 0 car ce n'est pas un message vital à retransmettre
+                message_systeme(reseau_fd, 2, 0, joueurs_a_ping[i].addr);
+            }
+            
+            // Affichage de contrôle toutes les 3 secondes
+            afficher_liste_joueurs();
+            dernier_ping_envoye = temps_actuel; // On redémarre le chrono !
+        }
         //Gestion des deconnexions 
         struct sockaddr_in addr_fantome;
         int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
@@ -224,14 +268,18 @@ int main() {
             nettoyer_file_joueur_parti(addr_fantome);
 
             // Prévenir Python
+            if (id_deconnecte > 0) { 
             char json_deco[128];
             sprintf(json_deco, "{\"type\": \"disconnect\", \"player_id\": %d}", id_deconnecte);
             sendto(sock, json_deco, strlen(json_deco), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
             printf("[DÉCO] Envoyé à Python : %s\n", json_deco);
+        } else {
+        printf("[INFO] Pair jamais identifié, pas de notification Python.\n");
         }
     }
+}
 
-    return 0;
+    return 0;   
 }
     
 

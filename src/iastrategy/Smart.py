@@ -22,7 +22,7 @@ class Smart(Strategy):
         return "Smart"
 
     def play(self, general, battlefield):
-        print(f"[Smart] Playing turn for General {general.id} with {len(general.get_my_units(battlefield))} units alive.")
+        #print(f"[Smart] Playing turn for General {general.id} with {len(general.get_my_units(battlefield))} units alive.")
         my_units = [u for u in general.get_my_units(battlefield) if u.is_alive()]
         if not my_units:
             return
@@ -51,7 +51,7 @@ class Smart(Strategy):
         # 3. UNIT LOGIC
         for unit in my_units:
             target = self._find_nearest_enemy(unit, battlefield)
-            print(f"[Smart] Unit {unit.id} ({unit.name}) target acquisition: {'None' if not target else f'Enemy {target.id} at {target.position}'}")
+            #print(f"[Smart] Unit {unit.id} ({unit.name}) target acquisition: {'None' if not target else f'Enemy {target.id} at {target.position}'}")
             if not target:
                 continue
                 
@@ -73,10 +73,10 @@ class Smart(Strategy):
                 if unit.type_attack == "Melee":
                     if dist_to_target <= unit.range + UNIT_RADIUS * 2 + EPSILON:
                         unit.set_order("attack", target=target)
-                        print(f"[Smart] {unit.name} {unit.id} attacking enemy at {target.position}")
+                        #print(f"[Smart] {unit.name} {unit.id} attacking enemy at {target.position}")
                     else:
                         unit.set_order("move", target_pos=target.position)
-                        print(f"[Smart] {unit.name} {unit.id} moving towards enemy at {target.position}")
+                        #print(f"[Smart] {unit.name} {unit.id} moving towards enemy at {target.position}")
                 else:
                     # Distance Logic
                     enemies = [e for e in battlefield.get_enemy_units(unit) if e.is_alive()]
@@ -85,14 +85,14 @@ class Smart(Strategy):
                     if enemies_in_range:
                         best_local_target = min(enemies_in_range, key=lambda e: e.hp)
                         unit.set_order("attack", target=best_local_target)
-                        print(f"[Smart] {unit.name} {unit.id} attacking enemy at {best_local_target.position} (HP: {best_local_target.hp})")
+                        #print(f"[Smart] {unit.name} {unit.id} attacking enemy at {best_local_target.position} (HP: {best_local_target.hp})")
                     elif enemies:
                         nearest_target = min(enemies, key=lambda e: unit.distance_to(e))
                         unit.set_order("move", target_pos=nearest_target.position)
-                        print(f"[Smart] {unit.name} {unit.id} moving towards enemy at {nearest_target.position}")
+                        #print(f"[Smart] {unit.name} {unit.id} moving towards enemy at {nearest_target.position}")
             else:
                 # Outside of aggressive mode, we climb
                 unit.set_order("move", target_pos=my_safe_pos)
-                print(f"[Smart] {unit.name} {unit.id} climbing towards safe high ground at {my_safe_pos}")
+                #print(f"[Smart] {unit.name} {unit.id} climbing towards safe high ground at {my_safe_pos}")
 
   

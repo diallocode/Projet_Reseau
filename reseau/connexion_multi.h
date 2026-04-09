@@ -40,7 +40,10 @@ void disconnect_paire_by_addr(struct sockaddr_in addr);
 //verification des @ inactives
 int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out);
 
-void actualiser_activite(struct sockaddr_in addr);
+void actualiser_activite(struct sockaddr_in addr, uint32_t id_joueur);
 
+
+/* * Affiche la liste détaillée de tous les joueurs actuellement connectés dans le terminal. */
+void afficher_liste_joueurs();
 
 #endif // OUMAR_H
