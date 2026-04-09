@@ -168,7 +168,7 @@ char *diffusion_message_sens2(int reseau_fd){
             printf("[P2P] Requête de découverte reçue de %s:%d\n", inet_ntoa(addr_distant.sin_addr), ntohs(addr_distant.sin_port));
             if (mon_id_joueur > 0) {
                 // Je renvoie un Type 6 à l'expéditeur. Mon ID se mettra automatiquement dans l'en-tête.
-                message_systeme(reseau_fd, 6, 0, addr_distant);
+                message_systeme(reseau_fd, 4, 0, addr_distant);
             }
             free(Buffer);
             return NULL;
