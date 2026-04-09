@@ -90,6 +90,43 @@ int main() {
     python_send_addr.sin_port = htons(5003);
 
 
+    afficher_mes_ips();
+
+    printf("Voulez-vous rejoindre une partie existante ? (o/n) : ");
+    char reponse[4];
+    fgets(reponse, sizeof(reponse), stdin);
+
+    if (reponse[0] == 'o' || reponse[0] == 'O') {
+        char ip_pair[64];
+        printf("Entrez l'IP du pair : ");
+        fgets(ip_pair, sizeof(ip_pair), stdin);
+        ip_pair[strcspn(ip_pair, "\n")] = '\0';
+
+        struct sockaddr_in addr_pair;
+        memset(&addr_pair, 0, sizeof(addr_pair));
+        addr_pair.sin_family = AF_INET;
+        addr_pair.sin_addr.s_addr = inet_addr(ip_pair);
+        addr_pair.sin_port = htons(5002);
+
+        add_peer_if_new(addr_pair);
+        printf("[INFO] Pair %s:5002 ajouté au carnet.\n", ip_pair);
+
+        printf("[CONNECT] Lancement de la recherche d'ID...\n");
+        demarrer_recherche_id(reseau_fd);
+
+    } else {
+        set_mon_id(1);
+        printf("[INFO] Vous êtes le joueur 1.\n");
+
+        char json_connected[64];
+        sprintf(json_connected, "{\"type\":\"connected\",\"player_id\":1}");
+        sendto(sock, json_connected, strlen(json_connected), 0,(struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+    }
+
+    printf("Processus C prêt !\n");
+
+
+
     while(1){
         fd_set fds;
         FD_ZERO(&fds);
