@@ -120,7 +120,7 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 
     add_peer_if_new(addr_distant); // ajoute a la liste de diffusion
-
+    actualiser_activite(addr_distant);  // On remet son temps a 0
     // recuperation de l'enveloppe
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
 
@@ -131,12 +131,11 @@ char *diffusion_message_sens2(int reseau_fd){
     // Verfication du type 
     switch (enveloppe_recue->type_message)
     {
-        // Communication
-        case 3: /* INIT */
-        case 4: /* ATTACK */
-        case 0: /* MOVE */
+        
+        case 0: /* MOVE INIT ATTACK etc.... */
             printf("Message Reçu");
-            message_systeme(reseau_fd, 1, seq_recu, addr_distant);     // Pour indiquer qu'on a recu le paquet
+            // Pour indiquer qu'on a recu le paquet (ACK)
+            message_systeme(reseau_fd, 1, seq_recu, addr_distant);    
 
             char *donnee_json = malloc(taille_json+1);
             memcpy(donnee_json, Buffer + sizeof(EnteteUDP), taille_json);
