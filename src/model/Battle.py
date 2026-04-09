@@ -88,6 +88,7 @@ class Battle:
                    # --- EXPÉDITION VERS LE RÉSEAU ---
                    if self.battlefield.outgoing_network_events:
                        for event in self.battlefield.outgoing_network_events:
+                           print(f"Envoi d'un événement réseau : {event}")
                            self.network_manager.send_to_c(event)
                       
                        # On vide la boîte d'envoi pour la prochaine frame !

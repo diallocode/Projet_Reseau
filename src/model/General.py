@@ -42,7 +42,7 @@ class General:
         # Global filter of unit dictionary
         return [
             unit for uid, unit in battlefield.troupes.items()
-            if lower_bound <= uid < upper_bound and unit.is_alive()
+            if lower_bound <= uid <= upper_bound and unit.is_alive()
         ]
 
 
