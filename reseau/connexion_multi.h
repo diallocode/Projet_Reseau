@@ -3,11 +3,12 @@
 
 #include <netinet/in.h> // Requis pour la structure sockaddr_in
 #include <time.h> 
+#include <stdint.h>  
 
 // Structure représentant un joueur dans le carnet d'adresses
 struct paire {
     struct sockaddr_in addr;
-    int id;
+    uint32_t id;
     time_t dernier_vu;
 };
 

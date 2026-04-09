@@ -37,7 +37,14 @@ uint32_t obtenir_type_message(const char *donnee_json) {
 
 
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    // Port d'écoute réseau passé en argument, 5002 par défaut
+    int mon_port   = (argc > 1) ? atoi(argv[1]) : 5002;
+    int port_python_recv = (argc > 2) ? atoi(argv[2]) : 5001;
+    int port_python_send = (argc > 3) ? atoi(argv[3]) : 5003;
+
+
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         perror("Erreur création socket");
@@ -48,7 +55,7 @@ int main() {
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    addr.sin_port = htons(5001);
+    addr.sin_port = htons(port_python_recv);
 
     if (bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         perror("Erreur bind");
@@ -67,7 +74,7 @@ int main() {
     memset(&reseau_addr, 0, sizeof(reseau_addr));
     reseau_addr.sin_family = AF_INET;
     reseau_addr.sin_addr.s_addr = INADDR_ANY;
-    reseau_addr.sin_port = htons(5002); 
+    reseau_addr.sin_port = htons(mon_port); 
     bind(reseau_fd, (struct sockaddr*)&reseau_addr, sizeof(reseau_addr)); 
 
     // Socket d'envoi
@@ -75,7 +82,7 @@ int main() {
     memset(&python_send_addr, 0, sizeof(python_send_addr));
     python_send_addr.sin_family = AF_INET;
     python_send_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    python_send_addr.sin_port = htons(5003);
+    python_send_addr.sin_port = htons(port_python_send);
 
 
     afficher_mes_ips();
@@ -150,17 +157,16 @@ int main() {
                            set_mon_id((uint32_t)id_item->valueint);     // Mise a jour de l'id
                            printf("[SYSTÈME] Mon ID a été configuré en dur à : %d\n", id_item->valueint);
                        }
-                   }
+                   } else {
+                        uint32_t type_message = obtenir_type_message(buffer);
+                        // Tous les autres messages → diffusion normale
+                        diffusion_message_sens1(buffer, reseau_fd, type_message);
+                        printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
+                    }
                    cJSON_Delete(json);
-               }
-               else {
-                    uint32_t type_message = obtenir_type_message(buffer);
-                    // Tous les autres messages → diffusion normale
-                    diffusion_message_sens1(buffer, reseau_fd, type_message);
-                    printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-               }
+                }
+            }
         }
-    }
 
         
 
