@@ -55,6 +55,10 @@ extern void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti);
 extern void demarrer_recherche_id(int mon_socket_udp);
 extern int verifier_fin_recherche_id();
 
+extern void set_mon_id(uint8_t id);
+
+
+
 
 
 #endif
