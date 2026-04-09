@@ -8,7 +8,7 @@ from Constant import ROWS, COLS
 class Console(View):
     """ Redraws cells if that changed since last frame. """
 
-    def __init__(self, battlefield: Battlefield, player_id):
+    def __init__(self, battlefield: Battlefield):
         self.battlefield = battlefield
         self.winner = None
         pygame.init()
@@ -68,7 +68,7 @@ class Console(View):
 
         symbol = next(unit['symbol'] for unit in units_list
                       if unit['name'] == unit_name and unit['id'] == camp_id)
-        color = self.COLOR_BLUE if unit['id'] // 1000 == self.player_id else self.COLOR_RED
+        color = self.COLOR_RED if unit['id'] // 1000 == self.generaux[0].id else self.COLOR_BLUE
 
         return symbol, color
 
