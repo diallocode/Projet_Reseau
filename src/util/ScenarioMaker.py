@@ -91,9 +91,9 @@ class ScenarioMaker:
                 
                 self.network_data["units"].append({
                     "id": global_unit_id,
-                    "type": unit_type,
-                    "x": pos[1],
-                    "y": pos[0],
+                    "type": u1.name,
+                    "x": u1.position[0],
+                    "y": u1.position[1],
                     "hp": u1.hp,
                     "network_owner": self.player_id
                 })

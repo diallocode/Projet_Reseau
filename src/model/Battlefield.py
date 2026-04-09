@@ -2,6 +2,7 @@ import math
 import random
 from Constant import UNIT_RADIUS
 from Network.NetworkManager import NetworkManager
+from model.General import General
 
 class Battlefield:
     """
@@ -253,7 +254,7 @@ class Battlefield:
                 return False
         return True
 
-    def informe_battlefield_state(self):
+    def informe_battlefield_state(self, general:General):
         """
         Envoie l'état actuel du champ de bataille au processus C pour synchronisation.
         """
@@ -261,7 +262,7 @@ class Battlefield:
         for unit in self.troupes.values():
             if unit.position is None or not unit.is_alive():
                 continue
-            if unit.id // 1000 != unit.id // 1000:  # Si ce n'est pas une unité du joueur local, on l'ignore
+            if unit.id // 1000 != general.id:  # Si ce n'est pas une unité du joueur local, on l'ignore
                 continue  # On n'envoie que nos unités pour éviter les conflits de données
             units_data.append({
                 "id": unit.id,
@@ -269,7 +270,7 @@ class Battlefield:
                 "x": unit.position[0],
                 "y": unit.position[1],
                 "hp": unit.hp,
-                "network_owner": unit.id // 1000
+                "network_owner": general.id
             })
 
         message = {
@@ -279,7 +280,7 @@ class Battlefield:
         }
         self.network_manager.send_to_c(message)
     
-    def _handle_new_player(self, data):
+    def _handle_new_player(self, data, general):
         """
         Intègre l'armée d'un nouvel arrivant sur la carte locale.
         data ressemble à : {"type": "handshake", "player_id": 2, "units": [...]}
@@ -314,10 +315,8 @@ class Battlefield:
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
         print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
-            
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
-        
-        self.informe_battlefield_state()
+        self.informe_battlefield_state(general)
         
     def _handle_disconnect(self, data):
         """

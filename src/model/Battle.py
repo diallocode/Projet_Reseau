@@ -62,7 +62,7 @@ class Battle:
             for msg in self.network_manager.get_messages():
                 if msg["type"] == "handshake" or msg["type"] == "acknowledgment":
                     print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
-                    self.battlefield._handle_new_player(msg)
+                    self.battlefield._handle_new_player(msg, self.general)
                 elif msg["type"] == "update":
                     print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                     self.battlefield._handle_unit_update(msg)
