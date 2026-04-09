@@ -6,16 +6,17 @@
 // Le point de départ de ta file d'attente
 NoeudAttente *file_attente = NULL;
 
+static uint8_t mon_id_joueur = 0; // identifiant du joueur
+static uint32_t compteur_sequence = 0;          // sequence
 
 // Python->Reseau
-int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp){
+int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, int type_msg){
 
     // CREATION DE L'ENVELOPPE
-    // enveloppe du message
     EnteteUDP enveloppe;        
     enveloppe.taille_payload = htons((uint16_t)strlen(donnee_json));        // taille
-    enveloppe.type_message = 0;
-    static uint32_t compteur_sequence = 0;          // sequence
+    enveloppe.type_message = type_msg;
+    enveloppe.id_expediteur = mon_id_joueur;
     enveloppe.num_sequence = htonl(compteur_sequence);
     compteur_sequence++;
 
@@ -43,36 +44,61 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp){
         if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)dest_addr, sizeof(struct sockaddr_in)) < 0){
             printf("erreur-sendto");
         }
+    
+        /*Gestion de la file d'attente*/
+        NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
+
+        if (nouveau_colis == NULL) {
+            perror("Erreur critique : Plus de mémoire pour archiver le colis");
+            return 1;
+        }
+
+        // ajout de l'enveloppe
+        nouveau_colis->entete = enveloppe;
+
+        // ajout du json
+        strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);   // copie
+        nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
+
+        // ajout du temp
+        nouveau_colis->temps_envoi = get_time(); // a definir plus tard
+
+        // ajout de l'adresse dest du paquet
+        nouveau_colis->dest = *dest_addr;
+
+        // ajout a la liste globale
+        nouveau_colis->suivant = file_attente;
+        file_attente = nouveau_colis;
+
         //dest_addr = dest_addr->suivant; // avancement
+
     }
     
-    /*Gestion de la file d'attente*/
-    NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
-
-    if (nouveau_colis == NULL) {
-        perror("Erreur critique : Plus de mémoire pour archiver le colis");
-        return 1;
-    }
-
-    // ajout de l'enveloppe
-    nouveau_colis->entete = enveloppe;
-
-    // ajout du json
-    strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);   // copie
-    nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
-
-    // ajout du temp
-    nouveau_colis->temps_envoi = get_time(); // a definir plus tard
-
-    //
-    nouveau_colis->suivant = file_attente;
-    file_attente = nouveau_colis;
-
-
     free(Buffer);
     return 0;
 }
 
+
+
+//  ACK et PING
+void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest) {
+    
+    EnteteUDP enveloppe;
+    
+    // La taille du payload est de ZERO car pas de JSON
+    enveloppe.taille_payload = htons(0); 
+    
+    enveloppe.type_message = type_msg;
+    enveloppe.id_expediteur = mon_id_joueur;
+    enveloppe.num_sequence = htonl(num_seq);
+
+    //  On envoie DIRECTEMENT la structure, sans malloc, sans Buffer !
+    if(sendto(mon_socket_udp, &enveloppe, sizeof(EnteteUDP), 0, (struct sockaddr*)&dest, sizeof(struct sockaddr_in)) < 0) {
+        printf("[ERREUR] Impossible d'envoyer le message système (Type %d)\n", type_msg);
+    } else {
+        printf("[RÉSEAU] Message système (Type %d) envoyé avec succès.\n", type_msg);
+    }
+}
 
 
 
@@ -93,8 +119,9 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 
     // Reception
-    if(recvfrom(reseau_fd, Buffer, TAILLE_PAQUET, MSG_CONFIRM, (struct sockaddr*)&addr_distant, &addr_len) < 0){
+    if(recvfrom(reseau_fd, Buffer, TAILLE_PAQUET, 0, (struct sockaddr*)&addr_distant, &addr_len) < 0){
         printf("echec de reception du paquet");
+        free(Buffer);
         return NULL;
     }
 
@@ -108,7 +135,12 @@ char *diffusion_message_sens2(int reseau_fd){
     // Verfication du type 
     switch (enveloppe_recue->type_message)
     {
-        case 0: /* communication normale, envoi vers ipc */
+        // Communication
+        case 3: /* INIT */
+        case 4: /* ATTACK */
+        case 0: /* MOVE */
+            message_systeme(reseau_fd, 1, seq_recu, addr_distant);     // Pour indiquer qu'on a recu le paquet
+
             char *donnee_json = malloc(taille_json+1);
             memcpy(donnee_json, Buffer + sizeof(EnteteUDP), taille_json);
             donnee_json[taille_json] = '\0';    // fermeture correcte de la chaine
@@ -117,11 +149,11 @@ char *diffusion_message_sens2(int reseau_fd){
             return donnee_json;
 
         case 1: /* Nettoyage de la file d'attente */
-            printf("ACK recu pour le message %u\n", seq_recu);
+            printf("[NOUVEAU] ACK recu pour le message %u\n", seq_recu);
 
             // suppression dans la file d'attente
             uint32_t seq_confirmee = ntohl(enveloppe_recue->num_sequence);
-            supprimer_de_la_file(seq_confirmee);
+            supprimer_de_la_file(seq_confirmee, addr_distant);
 
             free(Buffer);
             return NULL;
@@ -144,6 +176,54 @@ char *diffusion_message_sens2(int reseau_fd){
 
 
 
+void verifier_retransmissions(int mon_socket_udp) {
+    long maintenant = get_time();
+    long DELAI_RETRANSMISSION = 300; // 300ms avant de considérer le paquet perdu
+    
+    // On récupère la liste des destinations (via Oumar)
+    struct sockaddr_in *dest_addr = NULL; 
+
+    NoeudAttente *actuel = file_attente;
+
+    // On fait une boucle sur tes cibles
+    while (actuel != NULL) {
+        if (maintenant - actuel->temps_envoi > DELAI_RETRANSMISSION) {
+            
+            // On recalcule la taille totale (En-tête + JSON)
+            int taille_json = strlen(actuel->payload);
+            int taille_totale = sizeof(EnteteUDP) + taille_json;
+
+            // On prépare le buffer de renvoi
+            char *BufferRelance = malloc(taille_totale);
+            if (BufferRelance != NULL) {
+                memcpy(BufferRelance, &actuel->entete, sizeof(EnteteUDP));
+                memcpy(BufferRelance + sizeof(EnteteUDP), actuel->payload, taille_json);
+
+                // On utilise actuel->dest qui est l'adresse spécifique du joueur en retard
+                sendto(mon_socket_udp, 
+                    BufferRelance, 
+                    taille_totale, 
+                    0, 
+                    (struct sockaddr*)&(actuel->dest), 
+                    sizeof(struct sockaddr_in));
+
+                free(BufferRelance);
+                
+                printf("[RETRANSMISSION] Renvoi du message %u vers %s:%d\n", 
+                        ntohl(actuel->entete.num_sequence),
+                        inet_ntoa(actuel->dest.sin_addr), 
+                        ntohs(actuel->dest.sin_port));
+            }
+
+            // On réinitialise le chrono pour lui laisser une nouvelle chance de 300ms
+            actuel->temps_envoi = maintenant;
+        }
+        actuel = actuel->suivant;
+    }
+}
+
+
+
 // Fonction utilitaire pour avoir le temps en millisecondes
 long get_time() {
     struct timeval temps;
@@ -153,13 +233,15 @@ long get_time() {
 
 
 
-void supprimer_de_la_file(uint32_t seq_a_supprimer) {
+void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteur) {
     NoeudAttente *actuel = file_attente;
     NoeudAttente *precedent = NULL;
 
     while (actuel != NULL) {
         // On compare les numéros de séquence (déjà convertis en host-byte-order)
-        if (ntohl(actuel->entete.num_sequence) == seq_a_supprimer) {
+        if (ntohl(actuel->entete.num_sequence) == seq_a_supprimer &&
+            actuel->dest.sin_addr.s_addr == expediteur.sin_addr.s_addr &&
+            actuel->dest.sin_port == expediteur.sin_port) {
             
             // Si c'est le premier nœud de la liste
             if (precedent == NULL) {
@@ -181,4 +263,53 @@ void supprimer_de_la_file(uint32_t seq_a_supprimer) {
     }
     
     printf("[INFO] ACK reçu pour %u, mais message déjà supprimé ou inconnu.\n", seq_a_supprimer);
+}
+
+
+
+
+// Sera appeler par Oumar quand un joueur se deconnecte
+void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti) {
+    NoeudAttente *actuel = file_attente;
+    NoeudAttente *precedent = NULL;
+    int compteur = 0;
+
+    while (actuel != NULL) {
+        // On compare l'IP et le Port pour identifier le joueur qui vient de partir
+        if (actuel->dest.sin_addr.s_addr == joueur_parti.sin_addr.s_addr &&
+            actuel->dest.sin_port == joueur_parti.sin_port) {
+            
+            // On mémorise le nœud à supprimer
+            NoeudAttente *a_supprimer = actuel;
+
+            // On ajuste les pointeurs de la liste
+            if (precedent == NULL) {
+                file_attente = actuel->suivant;
+                actuel = file_attente; // On avance au suivant
+            } else {
+                precedent->suivant = actuel->suivant;
+                actuel = actuel->suivant; // On avance au suivant
+            }
+
+            free(a_supprimer);
+            compteur++;
+          
+        } else {
+            // Si ce n'est pas le joueur concerné, on avance normalement
+            precedent = actuel;
+            actuel = actuel->suivant;
+        }
+    }
+
+    if (compteur > 0) {
+        printf("[SYSTEME] Nettoyage : %d messages supprimés pour le joueur %s:%d (déconnecté).\n", 
+                compteur, inet_ntoa(joueur_parti.sin_addr), ntohs(joueur_parti.sin_port));
+    }
+}
+
+
+
+
+void set_mon_id(uint8_t id) {
+    mon_id_joueur = id;
 }

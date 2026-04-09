@@ -8,6 +8,32 @@
 #include "cJSON.h"
 //#include <cjson/cJSON.h>
 
+// Fonction utilitaire pour traduire le type texte en type réseau
+uint8_t obtenir_type_message(const char *donnee_json) {
+    uint8_t type_numerique = 0; // 0 par défaut 
+    cJSON *json = cJSON_Parse(donnee_json);
+    if (json != NULL) {
+        cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
+        
+        if (cJSON_IsString(type_item)) {
+            if (strcmp(type_item->valuestring, "init") == 0) {
+                type_numerique = 3; // Type 3 pour l'initialisation
+            } 
+            else if (strcmp(type_item->valuestring, "move") == 0) {
+                type_numerique = 0; // Type 0 pour les mouvements
+            }
+            else if (strcmp(type_item->valuestring, "shoot") == 0) {
+                type_numerique = 4; // Type 4 pour les tirs
+            }
+            //  ajouter d'autres types ici plus tard
+        }
+        
+        // on libère la mémoire avant de quitter !
+        cJSON_Delete(json); 
+    }
+    
+    return type_numerique;
+}
 
 
 
@@ -74,53 +100,34 @@ int main() {
                 printf("[PYTHON] Reçu : %s\n", buffer);
                 //Parser le json reçu et traiter 
 
-                cJSON *msg = cJSON_Parse(buffer);
-                if (msg == NULL) {
-                    printf("JSON malformé, on ignore\n");//juste pour tester
-                    continue;
-                    // ne pas crasher, juste ignorer
-                }
-    
-                char *type = cJSON_GetObjectItem(msg, "type")->valuestring;
-                if (strcmp(type, "move") == 0) {
-                    printf("ACTION : diffuser un mouvement\n"); //en attendant la fonction qui envoie à tous 
-                } else if (strcmp(type, "damage") == 0) {
-                    printf("ACTION : diffuser des dégâts\n");
-                }else if (strcmp(type, "init") == 0) {
-                    int player_id = cJSON_GetObjectItem(msg, "player_id")->valueint;
-                    printf("ACTION : nouveau joueur %d\n", player_id);
-
-                }else if (strcmp(type, "handshake") == 0) {
-                    printf("ACTION : diffuser le snapshot initial\n");
-
-                } else if (strcmp(type, "player_disconnected") == 0) {
-                    int player_id = cJSON_GetObjectItem(msg, "player_id")->valueint;
-                    printf("ACTION : joueur %d déconnecté\n", player_id);
-
-                } else {
-                    printf("Type inconnu : %s\n", type);}
-
-                cJSON_Delete(msg); //liberer la memoire
+                uint8_t type_message = obtenir_type_message(buffer);
+                diffusion_message_sens1(buffer, reseau_fd, type_message); // appel de la fonction
+        
+                printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
     
             }
         }
 
         // Reseau->Python
         if (FD_ISSET(reseau_fd, &fds)) {
-            char *json_propre = diffusion_message_sens2(reseau_fd);
+            char *json_propre = diffusion_message_sens2(reseau_fd); // Reception de la chaine json
+           
             if(json_propre != NULL){
                 // Transmettre à Python sur le port 5003
-                int ret = sendto(sock, buffer, strlen(json_propre), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
+                int ret = sendto(sock, json_propre, strlen(json_propre), 0, (struct sockaddr*)&python_send_addr, sizeof(python_send_addr));
                 if (ret < 0) {
                     perror("Erreur envoi vers Python");
+                    return -1;
                 } else {
-                    printf("[RÉSEAU→PYTHON] Transmis !\n");
+                    printf("[RÉSEAU→PYTHON] JSON transmis au jeu !\n");
                 }
             } 
+
+            free(json_propre);
         }
 
-
-        }
+        verifier_retransmissions(reseau_fd); // À chaque tour de boucle, on vérifie s'il y a des vieux messages à renvoyer
+    }
 
     return 0;
 }
