@@ -72,6 +72,8 @@ class Battle:
                     elif msg["type"] == "acknowledgment":
                         print(f"Acknowledgment reçu pour le message")
                         self.battlefield._handle_acknowledgment(msg)
+                    elif msg["type"] == "property_answer":
+                        self.battlefield._handle_property_answer(msg)
                     else:
                         print(f"Message inconnu reçu : {msg}")
                 self.handle_event()
