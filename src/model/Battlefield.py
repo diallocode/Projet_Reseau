@@ -509,3 +509,43 @@ class Battlefield:
 
     
         
+    
+    def _handle_property_request(self,msg):
+        """
+            Handle property request from C process. 
+            Format attendu : {type:property_request, unit_id:2, player_id_ask:45, action:attack/move, dest_x:45, dest_y:54, damage:14}
+        """
+            
+        unit_id= msg.get("unit_id")
+        if unit_id not in self.troupes:
+            response = {
+                "type": "property_answer",
+                "unit_id": unit_id,
+                "hp": 0,
+                "x": None,
+                "y": None,
+                "player_id": msg.get("player_id_ask"),
+                "action": msg.get("action"),
+                "dest_x": msg.get("dest_x"),
+                "dest_y": msg.get("dest_y"),
+                "damage": msg.get("damage")
+            }
+            self.push_network_event(response)
+            return
+
+        unit = self.troupes[unit_id]
+        unit.network_owner = msg.get("player_id_ask")
+        response = {
+            "type": "property_answer",
+            "unit_id": unit_id,
+            "hp": unit.hp,
+            "x": unit.position[0] if unit.position else None,
+            "y": unit.position[1] if unit.position else None,
+            "player_id": msg.get("player_id_ask"),
+            "action": msg.get("action"),
+            "dest_x": msg.get("dest_x"),
+            "dest_y": msg.get("dest_y"),
+            "damage": msg.get("damage")
+        }
+        self.push_network_event(response)
+        
