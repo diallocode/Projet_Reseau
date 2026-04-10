@@ -60,7 +60,7 @@ class Battle:
                 # Without view mode
                 dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode    
             for msg in self.network_manager.get_messages():
-                if msg["type"] == "handshake" or msg["type"] == "acknowledgment":
+                if msg["type"] == "handshake":
                     print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
                     self.battlefield._handle_new_player(msg, self.general)
                 elif msg["type"] == "update":
@@ -68,6 +68,9 @@ class Battle:
                     self.battlefield._handle_unit_update(msg)
                 elif msg["type"] == "player_disconnected":
                     self.battlefield._handle_disconnect(msg)
+                elif msg["type"] == "acknowledgment":
+                    print(f"Acknowledgment reçu pour le message ID {msg['message_id']} du player {msg['player_id']}")
+                    self.battlefield._handle_acknowledgment(msg)
                 else:
                     print(f"Message inconnu reçu : {msg}")
             self.handle_event()
