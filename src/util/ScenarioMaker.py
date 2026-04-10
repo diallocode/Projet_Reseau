@@ -5,7 +5,7 @@ from util.Functions import create_strategy
 from Network.NetworkManager import NetworkManager
 
 class ScenarioMaker:
-    def __init__(self, scenario, player_id,  iaName, network_manager:NetworkManager):
+    def __init__(self, scenario, player_id,  iaName):
         self.scenario = scenario
         self.iaName = iaName
         self.player_id = player_id
@@ -21,9 +21,8 @@ class ScenarioMaker:
         self.create_positions()
         self.create_units()
         self.general = self.create_generals()
-        self.network_manager = network_manager
         
-        self.network_manager.send_to_c(self.network_data)
+        #self.network_manager.send_to_c(self.network_data)
 
     def create_positions(self):
         start_line = self.scenario["startLine"]
@@ -104,4 +103,4 @@ class ScenarioMaker:
     
 
     def get_data(self):
-        return {"general": self.general, "my_units": self.all_units}
+        return {"general": self.general, "my_units": self.all_units, "network_data": self.network_data}
