@@ -422,10 +422,17 @@ class Battlefield:
         unit.network_owner = msg.get("player_id")
         
         unit.hp = msg["hp"]
+
+        if unit.hp <= 0:
+            unit.current_order = None
+            unit.target_unit = None
+            self.remove_unit(unit_id)
+            return
         
         unit.position = (msg["x"], msg["y"])
         
         action = msg.get("action")
+        
         if action == "attack":
             unit.hp -=msg.get("damage")
             if unit.hp <= 0:
