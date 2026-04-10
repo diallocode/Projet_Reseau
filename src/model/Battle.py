@@ -69,7 +69,7 @@ class Battle:
                 elif msg["type"] == "player_disconnected":
                     self.battlefield._handle_disconnect(msg)
                 elif msg["type"] == "acknowledgment":
-                    print(f"Acknowledgment reçu pour le message ID {msg['message_id']} du player {msg['player_id']}")
+                    print(f"Acknowledgment reçu pour le message")
                     self.battlefield._handle_acknowledgment(msg)
                 else:
                     print(f"Message inconnu reçu : {msg}")
