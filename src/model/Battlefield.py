@@ -451,7 +451,7 @@ class Battlefield:
         print(f"Préparation d'un événement réseau : {event_data}")
         self.network_manager.send_to_c(event_data)
         
-    def _handle_property_answer(self, msg):
+    def _handle_property_answer(self, msg, general):
         """{type:property_answer, unit_id:2, hp:45, x:45, y:45, player_id:45, action:attack/move, dest_x:45, dest_y:54, damage:14}"""
         unit_id= msg.get("unit_id")
         if unit_id not in self.troupes:
@@ -484,6 +484,24 @@ class Battlefield:
             unit.position = (dest_x, dest_y)
             unit.current_order = None
             unit.target_unit = None
+        elif action == "info":
+            if unit.hp <= 0:
+                return
+            else:
+                message = { 
+                    "type": "property_request",
+                    "unit_id": msg.get("target_unit_id"),
+                    "actual_owner": msg.get("target_unit_actuel_owner"),
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner":  None,
+                    "target_unit_id":None,
+                    "dest_x": msg.get("dest_x"),
+                    "dest_y": msg.get("dest_y"),
+                    "action": "attack",
+                    "damage": msg.get("damage")
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
         else:
             print(f"Action inconnue dans property_answer : {action}")
 
