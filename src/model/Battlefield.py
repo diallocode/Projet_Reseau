@@ -275,7 +275,7 @@ class Battlefield:
 
         message = {
             "type": "acknowledgment",
-            "player_id": unit.id // 1000,
+            "player_id": general.id,
             "units": units_data
         }
         self.network_manager.send_to_c(message)
