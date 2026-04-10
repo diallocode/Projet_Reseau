@@ -111,12 +111,14 @@ int remove_peer(int index) {
 
 
 void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
+    printf("[DEBUG] actualiser_activite cherche %s:%d\n",
+    inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == addr.sin_port) {
           
            paire_connected[i].dernier_vu = time(NULL);
-           // NOUVEAU : On met à jour le carnet avec le vrai ID de l'adversaire !
+           // On met à jour le carnet avec le vrai ID de l'adversaire !
            paire_connected[i].id = vrai_id_joueur;
           
            return;
@@ -147,7 +149,7 @@ void afficher_liste_joueurs() {
             // Calcul du temps écoulé depuis le dernier message reçu
             int inactif_depuis = temps_actuel - joueurs[i].dernier_vu;
 
-            printf(" [%d] Joueur ID : %d | IP : %s | Port : %d | Inactif depuis : %ds\n", 
+            printf(" [%d] Joueur ID : %u | IP : %s | Port : %d | Inactif depuis : %ds\n", 
                    i, joueurs[i].id, ip, port, inactif_depuis);
         }
     }
