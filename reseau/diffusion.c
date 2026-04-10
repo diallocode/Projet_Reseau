@@ -53,21 +53,23 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
             printf("erreur-sendto");
         }
 
-        NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
-        if (nouveau_colis != NULL) {
-            // en tete
-            nouveau_colis->entete = enveloppe;
+        if (type_msg != 5){
+             NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
+            if (nouveau_colis != NULL) {
+                // en tete
+                nouveau_colis->entete = enveloppe;
 
-            // donnee-json
-            strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);
-            nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
-            nouveau_colis->temps_envoi = get_time();    // temps
-            
-            // On sauvegarde l'adresse exacte de la cible !
-            nouveau_colis->dest = dest_addr; 
+                // donnee-json
+                strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);
+                nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
+                nouveau_colis->temps_envoi = get_time();    // temps
+                
+                // On sauvegarde l'adresse exacte de la cible !
+                nouveau_colis->dest = dest_addr; 
 
-            nouveau_colis->suivant = file_attente;
-            file_attente = nouveau_colis;
+                nouveau_colis->suivant = file_attente;
+                file_attente = nouveau_colis;
+            }
         }
     }
 
@@ -134,7 +136,7 @@ char *diffusion_message_sens2(int reseau_fd){
     // Verfication du type 
     switch (enveloppe_recue->type_message)
     {
-        
+        case 5:
         case 0: /* MOVE INIT ATTACK etc.... */
             printf("Message Reçu");
             // Pour indiquer qu'on a recu le paquet (ACK)

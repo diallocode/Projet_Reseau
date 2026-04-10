@@ -19,7 +19,7 @@ uint32_t obtenir_type_message(const char *donnee_json) {
         
         if (cJSON_IsString(type_item)) {
             if (strcmp(type_item->valuestring, "handshake") == 0) {
-                type_numerique = 0; // Type 0 pour l'initialisation
+                type_numerique = 5; // Type 0 pour l'initialisation
             } 
             else if (strcmp(type_item->valuestring, "update") == 0) {
                 type_numerique = 0; // Type 0 pour les mouvements
