@@ -510,42 +510,69 @@ class Battlefield:
     
         
     
-    def _handle_property_request(self,msg):
+    def _handle_property_request(self,msg, general):
         """
             Handle property request from C process. 
-            Format attendu : {type:property_request, unit_id:2, player_id_ask:45, action:attack/move, dest_x:45, dest_y:54, damage:14}
-        """
-            
-        unit_id= msg.get("unit_id")
-        if unit_id not in self.troupes:
-            response = {
-                "type": "property_answer",
-                "unit_id": unit_id,
-                "hp": 0,
-                "x": None,
-                "y": None,
-                "player_id": msg.get("player_id_ask"),
-                "action": msg.get("action"),
-                "dest_x": msg.get("dest_x"),
-                "dest_y": msg.get("dest_y"),
-                "damage": msg.get("damage")
+            Format attendu : 
+            {
+                type: property_request, 
+                unit_id:2, 
+                target_unit_id : 14, 
+                actual_owner:1215, 
+                target_unit_actuel_owner: 545, 
+                ask_property_owner: 045, 
+                action: attack/move/info, 
+                dest_x:45, 
+                dest_y:54, 
+                damage:14
             }
-            self.push_network_event(response)
+            
+            Format de réponse attendu : 
+            {
+                type:property_answer, 
+                unit_id:2,
+                target_unit_id:54, 
+                actuel_owner: 545, (celui a qui ont cède : ask_property_owner de la requête)
+                hp:45,
+                x:45, 
+                y:45, 
+                action:attack/move/info, 
+                dest_x:45, 
+                dest_y:54,
+                damage:14, 
+            }
+        """
+        unit_id = msg.get("unit_id")
+        target_unit_id = msg.get("target_unit_id")
+        action = msg.get("action")
+        
+        if unit_id not in self.troupes:
+            print(f"Requête de propriété pour unité inconnue ID {unit_id}")
             return
-
+        
         unit = self.troupes[unit_id]
-        unit.network_owner = msg.get("player_id_ask")
+        
+        if unit.network_owner != general.id:
+            print(f"Requête de propriété pour unité non contrôlée ID {unit_id} (appartient à {unit.network_owner})")
+            return
+        
+        unit.network_owner = msg.get("ask_property_owner", unit.network_owner)  # Transfert de propriété temporaire pour la requête
+        
         response = {
             "type": "property_answer",
             "unit_id": unit_id,
+            "target_unit_id": target_unit_id,
+            "actuel_owner": unit.network_owner,
             "hp": unit.hp,
             "x": unit.position[0] if unit.position else None,
             "y": unit.position[1] if unit.position else None,
-            "player_id": msg.get("player_id_ask"),
-            "action": msg.get("action"),
+            "action": action,
             "dest_x": msg.get("dest_x"),
             "dest_y": msg.get("dest_y"),
             "damage": msg.get("damage")
         }
+        
         self.push_network_event(response)
+        
+            
         

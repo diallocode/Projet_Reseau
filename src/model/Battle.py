@@ -75,7 +75,7 @@ class Battle:
                     elif msg["type"] == "property_answer":
                         self.battlefield._handle_property_answer(msg)
                     elif msg["type"] == "property_request":
-                        self.battlefield._handle_property_request(msg)
+                        self.battlefield._handle_property_request(msg, self.general)
                         
                     else:
                         print(f"Message inconnu reçu : {msg}")
