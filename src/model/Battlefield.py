@@ -452,13 +452,31 @@ class Battlefield:
         self.network_manager.send_to_c(event_data)
         
     def _handle_property_answer(self, msg, general):
-        """{type:property_answer, unit_id:2, hp:45, x:45, y:45, player_id:45, action:attack/move, dest_x:45, dest_y:54, damage:14}"""
+        """
+        Format de réponse attendu : 
+            {
+                type:property_answer, 
+                unit_id:2,
+                target_unit_id:54, 
+                actuel_owner: 545, (celui a qui ont cède : ask_property_owner de la requête)
+                hp:45,
+                x:45, 
+                y:45, 
+                action:attack/move/info, 
+                dest_x:45, 
+                dest_y:54,
+                damage:14, 
+            }
+        """
         unit_id= msg.get("unit_id")
         if unit_id not in self.troupes:
             return
         unit = self.troupes[unit_id]
-        unit.network_owner = msg.get("player_id")
+        if msg.get("actuel_owner") != general.id:
+            print(f"Réponse de propriété pour unité non contrôlée ID {unit_id} (appartient à {msg.get('actuel_owner')})")
+            return
         
+        unit.network_owner = general.id   
         unit.hp = msg["hp"]
 
         if unit.hp <= 0:
@@ -471,21 +489,43 @@ class Battlefield:
         
         action = msg.get("action")
         
-        if action == "attack":
-            unit.hp -=msg.get("damage")
+        if action == "attack":  
+            unit.hp -= msg.get("damage")
             if unit.hp <= 0:
                 unit.hp = 0
                 unit.current_order = None
                 unit.target_unit = None            
+                self.network_manager.push_network_event({
+                    "type": "update",
+                    "id": unit.id,
+                    "hp": unit.hp,
+                    "network_owner": unit.network_owner,
+                    "x": unit.position[0],
+                    "y": unit.position[1]
+                })
                 self.remove_unit(unit_id)
+      
         elif action == "move":
             dest_x = msg.get("dest_x")
             dest_y = msg.get("dest_y")
-            unit.position = (dest_x, dest_y)
-            unit.current_order = None
-            unit.target_unit = None
+            unit.current_order = "move"
+            unit.target_pos = (dest_x, dest_y)
+            unit.update(0)  # Mise à jour immédiate pour appliquer la nouvelle position
+            
         elif action == "info":
             if unit.hp <= 0:
+                unit.hp = 0
+                unit.current_order = None
+                unit.target_unit = None            
+                self.network_manager.push_network_event({
+                    "type": "update",
+                    "id": unit.id,
+                    "hp": unit.hp,
+                    "network_owner": unit.network_owner,
+                    "x": unit.position[0],
+                    "y": unit.position[1]
+                })
+                self.remove_unit(unit_id)
                 return
             else:
                 message = { 
@@ -505,11 +545,6 @@ class Battlefield:
         else:
             print(f"Action inconnue dans property_answer : {action}")
 
-    
-
-    
-        
-    
     def _handle_property_request(self,msg, general):
         """
             Handle property request from C process. 
@@ -543,8 +578,6 @@ class Battlefield:
             }
         """
         unit_id = msg.get("unit_id")
-        target_unit_id = msg.get("target_unit_id")
-        action = msg.get("action")
         
         if unit_id not in self.troupes:
             print(f"Requête de propriété pour unité inconnue ID {unit_id}")
@@ -561,12 +594,12 @@ class Battlefield:
         response = {
             "type": "property_answer",
             "unit_id": unit_id,
-            "target_unit_id": target_unit_id,
+            "target_unit_id": msg.get("target_unit_id"),
             "actuel_owner": unit.network_owner,
             "hp": unit.hp,
             "x": unit.position[0] if unit.position else None,
             "y": unit.position[1] if unit.position else None,
-            "action": action,
+            "action": msg.get("action"),
             "dest_x": msg.get("dest_x"),
             "dest_y": msg.get("dest_y"),
             "damage": msg.get("damage")
