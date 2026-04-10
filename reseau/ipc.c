@@ -239,10 +239,10 @@ int main(int argc, char *argv[]) {
                                    ip_item->valuestring);
 
                             // Envoyer notre handshake au nouveau pair
-                           /* if (strlen(dernier_handshake) > 0) {
+                            /*if (strlen(dernier_handshake) > 0) {
                                 diffusion_message_sens1(dernier_handshake, reseau_fd, 5);
                                 printf("[RELAY] Notre handshake envoyé au nouveau pair.\n");
-                            } */
+                            }*/
                         }
                         // Ne pas transmettre ce message à Python
                         cJSON_Delete(msg);
