@@ -318,6 +318,41 @@ class Battlefield:
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
         self.informe_battlefield_state(general)
         
+    def _handle_acknowledgment(self, data):
+       
+        
+        "Supprimer tous les unités de ce joueur s'il existe déjà (cas de reconnexion)"
+        units = self.troupes.values()
+        for unit in list(units):  # list() pour éviter la modification pendant l'itération
+            if getattr(unit, 'network_owner', -1) == data["player_id"]:
+                self.remove_unit(unit.id)
+        
+        player_id = data["player_id"]
+        remote_units = data["units"]
+        from util.UnitsFactory import UnitsFactory
+
+        factory = UnitsFactory()
+
+        for u_data in remote_units:
+            unit_id = u_data["id"] 
+            unit_type = u_data["type"]
+            
+            # Création de l'unité
+            new_unit = factory.create_unit(unit_id, unit_type)
+            print(f"Création de l'unité {unit_id} de type {unit_type} pour le joueur {player_id}")
+            
+            # Forçage de l'état réseau
+            new_unit.position = (u_data["x"], u_data["y"])
+            new_unit.hp = u_data["hp"]
+            new_unit.network_owner = player_id 
+            new_unit.battlefield = self
+            
+            # Ajout au champ de bataille (risque de collision)
+            self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
+        print(f"L'armée du joueur {player_id} a rejoint la bataille !")
+        
+        
     def _handle_disconnect(self, data):
         """
         Nettoie le champ de bataille lorsqu'un joueur se déconnecte.
