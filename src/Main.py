@@ -26,11 +26,12 @@ if __name__ == '__main__':
         print(f"Running battle with {args.AI} Strategy as Player {player_id}")
 
         # On passe le fameux player_id au ScenarioMaker !
-        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI, network_manager)
+        scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI)
         data = scenario_maker.get_data()
 
         general1 = data.get("general")
         all_units = data.get("my_units")
+        network_data = data.get("network_data")
 
         battlefield = Battlefield(COLS, ROWS, all_units, network_manager, generate_heightmap(COLS, ROWS))
 
@@ -44,9 +45,11 @@ if __name__ == '__main__':
         battle = Battle(general1, battlefield, network_manager, view)
 
         if args.plot:
-            battle.collectStats = True
-
-        battle.start()
+            battle.collectStats = True       
+        
+        battle.start(network_data)
+        
+        
 
 
     if args.command == 'load':
