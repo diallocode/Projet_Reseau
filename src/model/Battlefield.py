@@ -164,13 +164,51 @@ class Battlefield:
     # ==========================================================
     #                   UPDATE CYCLE
     # ==========================================================
-    def _update_single_unit(self, unit, dt):
+    def _update_single_unit(self, unit, general, dt):
         if not unit.is_alive():
+            unit.network_locked = False
             return True
-        #print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
+
+        # Si l'unité n'appartient pas au général local et n'est pas déjà verrouillée
+        if unit.network_owner != general.id and not unit.network_locked:
+            
+            if unit.current_order == "move":
+                message = { 
+                    "type": "property_request",
+                    "unit_id": unit.id,
+                    "actuel_owner": unit.network_owner,
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner": None,
+                    "target_unit_id": None,
+                    "dest_x": unit.target_pos[0],
+                    "dest_y": unit.target_pos[1],
+                    "action": "move",
+                    "damage": 0
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
+                
+            elif unit.current_order == "attack":
+                message = { 
+                    "type": "property_request",
+                    "unit_id": unit.id,
+                    "actual_owner": unit.network_owner,
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner": unit.target_unit.network_owner if unit.target_unit else None,
+                    "target_unit_id": unit.target_unit.id if unit.target_unit else None,
+                    "dest_x": unit.target_pos[0],
+                    "dest_y": unit.target_pos[1],
+                    "action": "info",
+                    "damage": unit.compute_damage(unit, unit.target_unit) if unit.target_unit else 0
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
+
         unit.update(dt)
+        
         if unit.position:
             unit.position = self.clamp_position(unit.position)
+            
         return not unit.is_alive()
 
     # More nested list paths general->army->units
@@ -412,3 +450,8 @@ class Battlefield:
     def push_network_event(self, event_data):
         print(f"Préparation d'un événement réseau : {event_data}")
         self.network_manager.send_to_c(event_data)
+
+    
+
+    
+        
