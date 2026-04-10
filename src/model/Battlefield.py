@@ -350,6 +350,9 @@ class Battlefield:
             # Ajout au champ de bataille (risque de collision)
             self.troupes[unit_id] = new_unit
         print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
+        "afficher l'état de troupes pour debug"
+        for uid, unit in self.troupes.items():
+            print(f"Unité ID {uid}: Type {unit.name}, Position {unit.position}, HP {unit.hp}, Owner {getattr(unit, 'network_owner', 'Unknown')}")
         print(f"L'armée du joueur {player_id} a rejoint la bataille !")
         
         
