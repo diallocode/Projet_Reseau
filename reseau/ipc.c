@@ -28,14 +28,11 @@ uint32_t obtenir_type_message(const char *donnee_json) {
             } else if (strcmp(type_item->valuestring, "acknowledgment") == 0) {
                 type_numerique = 0;
             }
-<<<<<<< HEAD
             else if (strcmp(type_item->valuestring, "shoot") == 0) {
                 type_numerique = 0; // Type 0 pour les tirs
             }else if (strcmp(type_item->valuestring, "connected") == 0) {
                 type_numerique = 3;
             }
-=======
->>>>>>> 95da67cdeaea3fa2b7aaa00de4afb8f14232155f
         }
         cJSON_Delete(json); 
     }
@@ -171,7 +168,6 @@ int main(int argc, char *argv[]) {
                 buffer[n] = '\0';
                 printf("[PYTHON] Reçu : %s\n", buffer);
 
-<<<<<<< HEAD
                 uint8_t type_message = obtenir_type_message(buffer);
 
                 if (type_message == 3) {
@@ -198,110 +194,6 @@ int main(int argc, char *argv[]) {
                 if (ret < 0) {
                     perror("Erreur envoi vers Python");
                     return -1;
-=======
-                cJSON *json = cJSON_Parse(buffer);
-                if (json != NULL) {
-                    cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
-                  
-                    if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
-                        // Python nous donne son ID
-                        cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
-                        if (cJSON_IsNumber(id_item)) {
-                            set_mon_id((uint32_t)id_item->valueint);
-                            printf("[SYSTÈME] Mon ID configuré : %d\n", id_item->valueint);
-                        }
-                    } else {
-                        // Sauvegarder le handshake pour pouvoir le renvoyer aux nouveaux pairs
-                        if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "handshake") == 0) {
-                            strncpy(dernier_handshake, buffer, sizeof(dernier_handshake) - 1);
-                            printf("[SAUVEGARDE] Handshake local sauvegardé.\n");
-                        }
-                        // Diffusion normale sur le réseau
-                        uint32_t type_message = obtenir_type_message(buffer);
-                        diffusion_message_sens1(buffer, reseau_fd, type_message);
-                        printf("[SYSTEME] Message Python diffusé sur le réseau.\n");
-                    }
-                    cJSON_Delete(json);
-                }
-            }
-        }
-
-        // Reseau -> Python
-        if (FD_ISSET(reseau_fd, &fds)) {
-            char *json_propre = diffusion_message_sens2(reseau_fd);
-           
-            if (json_propre != NULL) {
-                // Vérifier le type avant de transmettre à Python
-                cJSON *msg = cJSON_Parse(json_propre);
-                if (msg != NULL) {
-                    cJSON *type_item = cJSON_GetObjectItem(msg, "type");
-
-                    if (type_item != NULL &&
-                        strcmp(type_item->valuestring, "liste_pairs") == 0) {
-                        // C reçoit la liste des pairs de A → les ajouter au carnet
-                        cJSON *pairs_array = cJSON_GetObjectItem(msg, "pairs");
-                        if (pairs_array != NULL) {
-                            int nb = cJSON_GetArraySize(pairs_array);
-                            for (int i = 0; i < nb; i++) {
-                                cJSON *pair = cJSON_GetArrayItem(pairs_array, i);
-                                cJSON *ip = cJSON_GetObjectItem(pair, "ip");
-                                if (ip != NULL) {
-                                    struct sockaddr_in nouveau;
-                                    memset(&nouveau, 0, sizeof(nouveau));
-                                    nouveau.sin_family = AF_INET;
-                                    nouveau.sin_addr.s_addr = inet_addr(ip->valuestring);
-                                    nouveau.sin_port = htons(5002);
-                                    add_peer_if_new(nouveau);
-                                    printf("[LISTE] Pair ajouté depuis liste : %s\n",
-                                           ip->valuestring);
-                                }
-                            }
-                        }
-                        // Ne pas transmettre ce message à Python
-                        cJSON_Delete(msg);
-                        free(json_propre);
-                        json_propre = NULL;
-
-                    } else if (type_item != NULL &&
-                               strcmp(type_item->valuestring, "nouveau_pair") == 0) {
-                        // B reçoit l'arrivée de C → ajouter C au carnet
-                        cJSON *ip_item = cJSON_GetObjectItem(msg, "ip");
-                        if (ip_item != NULL) {
-                            struct sockaddr_in nouveau;
-                            memset(&nouveau, 0, sizeof(nouveau));
-                            nouveau.sin_family = AF_INET;
-                            nouveau.sin_addr.s_addr = inet_addr(ip_item->valuestring);
-                            nouveau.sin_port = htons(5002);
-                            add_peer_if_new(nouveau);
-                            printf("[RELAY] Nouveau pair ajouté : %s\n",
-                                   ip_item->valuestring);
-
-                            // Envoyer notre handshake au nouveau pair
-                           /* if (strlen(dernier_handshake) > 0) {
-                                diffusion_message_sens1(dernier_handshake, reseau_fd, 5);
-                                printf("[RELAY] Notre handshake envoyé au nouveau pair.\n");
-                            } */
-                        }
-                        // Ne pas transmettre ce message à Python
-                        cJSON_Delete(msg);
-                        free(json_propre);
-                        json_propre = NULL;
-
-                    } else {
-                        // Message normal → transmettre à Python
-                        int ret = sendto(sock, json_propre, strlen(json_propre), 0,
-                                        (struct sockaddr*)&python_send_addr,
-                                        sizeof(python_send_addr));
-                        if (ret < 0) {
-                            perror("Erreur envoi vers Python");
-                        } else {
-                            printf("[RÉSEAU→PYTHON] JSON transmis au jeu !\n");
-                        }
-                        cJSON_Delete(msg);
-                        free(json_propre);
-                        json_propre = NULL;
-                    }
->>>>>>> 95da67cdeaea3fa2b7aaa00de4afb8f14232155f
                 } else {
                     free(json_propre);
                     json_propre = NULL;
