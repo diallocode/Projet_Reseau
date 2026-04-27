@@ -1,0 +1,157 @@
+Script démarré sur 2026-04-09 23:02:40+02:00 [TERM="xterm-256color" TTY="/dev/pts/8" COLUMNS="80" LINES="24"]
+[?2004h]0;barrydiallo@dell: ~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[01;32mbarrydiallo@dell[00m:[01;34m~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[00m$ clearscp diallo@192.168.1.25:~/Projet_Reseau/src/log_gamevm.txt ~/Bureau/reseau/log_p[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[2P/Projet_Res[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[19P~[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[A]0;barrydiallo@dell: ~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[01;32mbarrydiallo@dell[00m:[01;34m~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[00m$ [7Pclear
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1Pd ~learifconfigpython3 Main.py run Daft
+[?2004l<frozen importlib._bootstrap>:488: RuntimeWarning: Your system is avx2 capable but pygame was not built with support for it. The performance of some of your blits could be adversely affected. Consider enabling compile time detection with environment variables like PYGAME_DETECT_AVX2=1 if you are compiling without cross compilation.
+pygame 2.5.2 (SDL 2.30.0, Python 3.12.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Initialisation du pont réseau IPC...
+Initialisation locale de l'ID joueur...
+ID attribué (PID) : 513088
+[Network] 42 octets envoyés à C : {'type': 'connected', 'player_id': 513088}
+Running battle with Daft Strategy as Player 513088
+Please enter a scenario
+Format : {"Crossbowman":10, "Pikeman":10,"Knight":10,"startLine":55,"startCol":50,"armyDistance":10, "unitPerCol":10}
+->{"Crossbowman":10, "Pikeman":10,"Knight":10,"startLine":55,"startCol":50,"armyDistance":10, "unitPerCol":10}
+[Network] 2823 octets envoyés à C : {'type': 'handshake', 'player_id': 513088, 'units': [{'id': 513088000, 'type': 'Crossbowman', 'x': 55, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088001, 'type': 'Crossbowman', 'x': 56, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088002, 'type': 'Crossbowman', 'x': 57, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088003, 'type': 'Crossbowman', 'x': 58, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088004, 'type': 'Crossbowman', 'x': 59, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088005, 'type': 'Crossbowman', 'x': 60, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088006, 'type': 'Crossbowman', 'x': 61, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088007, 'type': 'Crossbowman', 'x': 62, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088008, 'type': 'Crossbowman', 'x': 63, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088009, 'type': 'Crossbowman', 'x': 64, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088010, 'type': 'Pikeman', 'x': 55, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088011, 'type': 'Pikeman', 'x': 56, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088012, 'type': 'Pikeman', 'x': 57, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088013, 'type': 'Pikeman', 'x': 58, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088014, 'type': 'Pikeman', 'x': 59, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088015, 'type': 'Pikeman', 'x': 60, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088016, 'type': 'Pikeman', 'x': 61, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088017, 'type': 'Pikeman', 'x': 62, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088018, 'type': 'Pikeman', 'x': 63, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088019, 'type': 'Pikeman', 'x': 64, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088020, 'type': 'Knight', 'x': 55, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088021, 'type': 'Knight', 'x': 56, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088022, 'type': 'Knight', 'x': 57, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088023, 'type': 'Knight', 'x': 58, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088024, 'type': 'Knight', 'x': 59, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088025, 'type': 'Knight', 'x': 60, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088026, 'type': 'Knight', 'x': 61, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088027, 'type': 'Knight', 'x': 62, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088028, 'type': 'Knight', 'x': 63, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088029, 'type': 'Knight', 'x': 64, 'y': 52, 'hp': 100, 'network_owner': 513088}]}
+Handshake reçu pour le player 50005 avec 30 unités
+Création de l'unité 50005000 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005001 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005002 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005003 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005004 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005005 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005006 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005007 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005008 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005009 de type Crossbowman pour le joueur 50005
+Création de l'unité 50005010 de type Pikeman pour le joueur 50005
+Création de l'unité 50005011 de type Pikeman pour le joueur 50005
+Création de l'unité 50005012 de type Pikeman pour le joueur 50005
+Création de l'unité 50005013 de type Pikeman pour le joueur 50005
+Création de l'unité 50005014 de type Pikeman pour le joueur 50005
+Création de l'unité 50005015 de type Pikeman pour le joueur 50005
+Création de l'unité 50005016 de type Pikeman pour le joueur 50005
+Création de l'unité 50005017 de type Pikeman pour le joueur 50005
+Création de l'unité 50005018 de type Pikeman pour le joueur 50005
+Création de l'unité 50005019 de type Pikeman pour le joueur 50005
+Création de l'unité 50005020 de type Knight pour le joueur 50005
+Création de l'unité 50005021 de type Knight pour le joueur 50005
+Création de l'unité 50005022 de type Knight pour le joueur 50005
+Création de l'unité 50005023 de type Knight pour le joueur 50005
+Création de l'unité 50005024 de type Knight pour le joueur 50005
+Création de l'unité 50005025 de type Knight pour le joueur 50005
+Création de l'unité 50005026 de type Knight pour le joueur 50005
+Création de l'unité 50005027 de type Knight pour le joueur 50005
+Création de l'unité 50005028 de type Knight pour le joueur 50005
+Création de l'unité 50005029 de type Knight pour le joueur 50005
+Troupes après intégration du joueur 50005: 60 unités sur le champ de bataille.
+L'armée du joueur 50005 a rejoint la bataille !
+[Network] 2827 octets envoyés à C : {'type': 'acknowledgment', 'player_id': 50005, 'units': [{'id': 513088000, 'type': 'Crossbowman', 'x': 55, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088001, 'type': 'Crossbowman', 'x': 56, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088002, 'type': 'Crossbowman', 'x': 57, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088003, 'type': 'Crossbowman', 'x': 58, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088004, 'type': 'Crossbowman', 'x': 59, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088005, 'type': 'Crossbowman', 'x': 60, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088006, 'type': 'Crossbowman', 'x': 61, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088007, 'type': 'Crossbowman', 'x': 62, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088008, 'type': 'Crossbowman', 'x': 63, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088009, 'type': 'Crossbowman', 'x': 64, 'y': 50, 'hp': 35, 'network_owner': 513088}, {'id': 513088010, 'type': 'Pikeman', 'x': 55, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088011, 'type': 'Pikeman', 'x': 56, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088012, 'type': 'Pikeman', 'x': 57, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088013, 'type': 'Pikeman', 'x': 58, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088014, 'type': 'Pikeman', 'x': 59, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088015, 'type': 'Pikeman', 'x': 60, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088016, 'type': 'Pikeman', 'x': 61, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088017, 'type': 'Pikeman', 'x': 62, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088018, 'type': 'Pikeman', 'x': 63, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088019, 'type': 'Pikeman', 'x': 64, 'y': 51, 'hp': 55, 'network_owner': 513088}, {'id': 513088020, 'type': 'Knight', 'x': 55, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088021, 'type': 'Knight', 'x': 56, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088022, 'type': 'Knight', 'x': 57, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088023, 'type': 'Knight', 'x': 58, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088024, 'type': 'Knight', 'x': 59, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088025, 'type': 'Knight', 'x': 60, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088026, 'type': 'Knight', 'x': 61, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088027, 'type': 'Knight', 'x': 62, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088028, 'type': 'Knight', 'x': 63, 'y': 52, 'hp': 100, 'network_owner': 513088}, {'id': 513088029, 'type': 'Knight', 'x': 64, 'y': 52, 'hp': 100, 'network_owner': 513088}]}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005000, 'hp': 30.0, 'network_owner': 50005, 'x': 55, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005000, 'hp': 30.0, 'network_owner': 50005, 'x': 55, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005002, 'hp': 30.0, 'network_owner': 50005, 'x': 57, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005002, 'hp': 30.0, 'network_owner': 50005, 'x': 57, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005003, 'hp': 30.0, 'network_owner': 50005, 'x': 58, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005003, 'hp': 30.0, 'network_owner': 50005, 'x': 58, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005004, 'hp': 30.0, 'network_owner': 50005, 'x': 59, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005004, 'hp': 30.0, 'network_owner': 50005, 'x': 59, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005005, 'hp': 30.0, 'network_owner': 50005, 'x': 60, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005005, 'hp': 30.0, 'network_owner': 50005, 'x': 60, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005007, 'hp': 30.0, 'network_owner': 50005, 'x': 62, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005007, 'hp': 30.0, 'network_owner': 50005, 'x': 62, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005008, 'hp': 30.0, 'network_owner': 50005, 'x': 63, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005008, 'hp': 30.0, 'network_owner': 50005, 'x': 63, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005009, 'hp': 30.0, 'network_owner': 50005, 'x': 64, 'y': 50}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005009, 'hp': 30.0, 'network_owner': 50005, 'x': 64, 'y': 50}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005010, 'hp': 51.0, 'network_owner': 50005, 'x': 55, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005010, 'hp': 51.0, 'network_owner': 50005, 'x': 55, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005011, 'hp': 51.0, 'network_owner': 50005, 'x': 56, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005011, 'hp': 51.0, 'network_owner': 50005, 'x': 56, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005012, 'hp': 51.0, 'network_owner': 50005, 'x': 57, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005012, 'hp': 51.0, 'network_owner': 50005, 'x': 57, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005013, 'hp': 51.0, 'network_owner': 50005, 'x': 58, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005013, 'hp': 51.0, 'network_owner': 50005, 'x': 58, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005014, 'hp': 51.0, 'network_owner': 50005, 'x': 59, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005014, 'hp': 51.0, 'network_owner': 50005, 'x': 59, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005015, 'hp': 51.0, 'network_owner': 50005, 'x': 60, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005015, 'hp': 51.0, 'network_owner': 50005, 'x': 60, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005016, 'hp': 51.0, 'network_owner': 50005, 'x': 61, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005016, 'hp': 51.0, 'network_owner': 50005, 'x': 61, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005017, 'hp': 51.0, 'network_owner': 50005, 'x': 62, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005017, 'hp': 51.0, 'network_owner': 50005, 'x': 62, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005018, 'hp': 51.0, 'network_owner': 50005, 'x': 63, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005018, 'hp': 51.0, 'network_owner': 50005, 'x': 63, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005019, 'hp': 51.0, 'network_owner': 50005, 'x': 64, 'y': 51}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005019, 'hp': 51.0, 'network_owner': 50005, 'x': 64, 'y': 51}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005020, 'hp': 92.0, 'network_owner': 50005, 'x': 55, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005020, 'hp': 92.0, 'network_owner': 50005, 'x': 55, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005021, 'hp': 92.0, 'network_owner': 50005, 'x': 56, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005021, 'hp': 92.0, 'network_owner': 50005, 'x': 56, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005022, 'hp': 92.0, 'network_owner': 50005, 'x': 57, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005022, 'hp': 92.0, 'network_owner': 50005, 'x': 57, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005023, 'hp': 92.0, 'network_owner': 50005, 'x': 58, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005023, 'hp': 92.0, 'network_owner': 50005, 'x': 58, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005024, 'hp': 92.0, 'network_owner': 50005, 'x': 59, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005024, 'hp': 92.0, 'network_owner': 50005, 'x': 59, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005025, 'hp': 92.0, 'network_owner': 50005, 'x': 60, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005025, 'hp': 92.0, 'network_owner': 50005, 'x': 60, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005026, 'hp': 92.0, 'network_owner': 50005, 'x': 61, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005026, 'hp': 92.0, 'network_owner': 50005, 'x': 61, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005027, 'hp': 92.0, 'network_owner': 50005, 'x': 62, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005027, 'hp': 92.0, 'network_owner': 50005, 'x': 62, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005028, 'hp': 92.0, 'network_owner': 50005, 'x': 63, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005028, 'hp': 92.0, 'network_owner': 50005, 'x': 63, 'y': 52}
+Préparation d'un événement réseau : {'type': 'update', 'id': 50005029, 'hp': 92.0, 'network_owner': 50005, 'x': 64, 'y': 52}
+[Network] 88 octets envoyés à C : {'type': 'update', 'id': 50005029, 'hp': 92.0, 'network_owner': 50005, 'x': 64, 'y': 52}
+Handshake reçu pour le player 513088 avec 30 unités
+Création de l'unité 50005000 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005001 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005002 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005003 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005004 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005005 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005006 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005007 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005008 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005009 de type Crossbowman pour le joueur 513088
+Création de l'unité 50005010 de type Pikeman pour le joueur 513088
+Création de l'unité 50005011 de type Pikeman pour le joueur 513088
+Création de l'unité 50005012 de type Pikeman pour le joueur 513088
+Création de l'unité 50005013 de type Pikeman pour le joueur 513088
+Création de l'unité 50005014 de type Pikeman pour le joueur 513088
+Création de l'unité 50005015 de type Pikeman pour le joueur 513088
+Création de l'unité 50005016 de type Pikeman pour le joueur 513088
+Création de l'unité 50005017 de type Pikeman pour le joueur 513088
+Création de l'unité 50005018 de type Pikeman pour le joueur 513088
+Création de l'unité 50005019 de type Pikeman pour le joueur 513088
+Création de l'unité 50005020 de type Knight pour le joueur 513088
+Création de l'unité 50005021 de type Knight pour le joueur 513088
+Création de l'unité 50005022 de type Knight pour le joueur 513088
+Création de l'unité 50005023 de type Knight pour le joueur 513088
+Création de l'unité 50005024 de type Knight pour le joueur 513088
+Création de l'unité 50005025 de type Knight pour le joueur 513088
+Création de l'unité 50005026 de type Knight pour le joueur 513088
+Création de l'unité 50005027 de type Knight pour le joueur 513088
+Création de l'unité 50005028 de type Knight pour le joueur 513088
+Création de l'unité 50005029 de type Knight pour le joueur 513088
+Troupes après intégration du joueur 513088: 30 unités sur le champ de bataille.
+L'armée du joueur 513088 a rejoint la bataille !
+[Network] 59 octets envoyés à C : {'type': 'acknowledgment', 'player_id': 50005, 'units': []}
+Handshake reçu pour le player 513088 avec 0 unités
+Troupes après intégration du joueur 513088: 0 unités sur le champ de bataille.
+L'armée du joueur 513088 a rejoint la bataille !
+Traceback (most recent call last):
+  File "/home/barrydiallo/Bureau/Projet_Reseau/version1/Projet_Reseau/src/Main.py", line 49, in <module>
+    battle.start()
+  File "/home/barrydiallo/Bureau/Projet_Reseau/version1/Projet_Reseau/src/model/Battle.py", line 65, in start
+    self.battlefield._handle_new_player(msg, self.general)
+  File "/home/barrydiallo/Bureau/Projet_Reseau/version1/Projet_Reseau/src/model/Battlefield.py", line 319, in _handle_new_player
+    self.informe_battlefield_state(general)
+  File "/home/barrydiallo/Bureau/Projet_Reseau/version1/Projet_Reseau/src/model/Battlefield.py", line 278, in informe_battlefield_state
+    "player_id": unit.id // 1000,
+                 ^^^^
+UnboundLocalError: cannot access local variable 'unit' where it is not associated with a value
+[?2004h]0;barrydiallo@dell: ~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[01;32mbarrydiallo@dell[00m:[01;34m~/Bureau/Projet_Reseau/version1/Projet_Reseau/src[00m$ [?2004l
+exit
+
+Script terminé sur 2026-04-09 23:09:23+02:00 [COMMAND_EXIT_CODE="1"]

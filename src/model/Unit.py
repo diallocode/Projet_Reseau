@@ -70,7 +70,7 @@ class Unit(ABC):
                 "x": self.position[0],
                 "y": self.position[1]
             })
-        print(f"Unit {self.id} took {damage:.1f} damage from Unit {attacker.id if attacker else 'Unknown'}, new HP: {self.hp}")
+        #print(f"Unit {self.id} took {damage:.1f} damage from Unit {attacker.id if attacker else 'Unknown'}, new HP: {self.hp}")
 
     def set_order(self, order_type: str, target=None, target_pos=None):
         """Assign a new 'move' or 'attack' command with associated targets."""
@@ -189,7 +189,7 @@ class Unit(ABC):
         """
         Applique le mouvement si la position est valide et libre.
         """
-        print(f"Je suis dans try_move pour l'unité {self.id}, nouvelle position proposée: {new_pos}")
+        #print(f"Je suis dans try_move pour l'unité {self.id}, nouvelle position proposée: {new_pos}")
         # Safety: The position must be within limits.
         if not self.battlefield.is_valid_position(new_pos):
             return False
@@ -207,7 +207,7 @@ class Unit(ABC):
         self.position = new_pos
         
         if self.battlefield:
-            print(f"UUnit battefield existing: {self.battlefield}")
+            #print(f"UUnit battefield existing: {self.battlefield}")
             self.battlefield.push_network_event({
                 "type": "update",
                 "id": self.id,
@@ -216,7 +216,7 @@ class Unit(ABC):
                 "x": self.position[0],
                 "y": self.position[1]
             })
-        print(f"[Class Unit] Unit {self.id} moved to {self.position}")
+        #print(f"[Class Unit] Unit {self.id} moved to {self.position}")
         return True
 
     def is_enemy(self, other: "Unit") -> bool:
