@@ -222,7 +222,7 @@ class Battlefield:
         ids_to_remove = []
         for unit in all_units:
             if unit.is_alive():
-                is_dead = self._update_single_unit(unit, dt)
+                is_dead = self._update_single_unit(unit,general, dt)
                 if is_dead:
                     ids_to_remove.append(unit.id)
             else:
@@ -402,7 +402,7 @@ class Battlefield:
         
       
         ids_to_remove = [
-            uid for uid, unit in self.battlefield.troupes.items() 
+            uid for uid, unit in self.troupes.items() 
             if getattr(unit, 'network_owner', -1) == player_id
         ]
         
