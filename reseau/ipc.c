@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
 
         // Gestion des déconnexions 
         struct sockaddr_in addr_fantome;
-        int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
+        int id_deconnecte = check_and_get_inactive_paire(60, &addr_fantome);
         if (id_deconnecte != -1) {
             printf("[ALERTE] Le joueur ID %d déconnecté pour inactivité.\n", id_deconnecte);
             disconnect_paire_by_addr(addr_fantome);
