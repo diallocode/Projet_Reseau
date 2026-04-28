@@ -3,6 +3,7 @@ import random
 from Constant import UNIT_RADIUS
 from Network.NetworkManager import NetworkManager
 from model.General import General
+from model.Unit import Unit
 
 class Battlefield:
     """
@@ -19,7 +20,7 @@ class Battlefield:
     """
 
     def __init__(self, width: float, height: float, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
-        """
+        """_handle_unit_update
         Initializes a continuous battlefield.
 
         Parameters
@@ -165,6 +166,8 @@ class Battlefield:
     #                   UPDATE CYCLE
     # ==========================================================
     def _update_single_unit(self, unit, dt):
+        if not isinstance(unit, Unit):
+            return False
         if not unit.is_alive():
             return True
         #print(f"Ordre actuel de l'unité {unit.id}: {unit.current_order}, cible: {unit.target_unit.id if unit.target_unit else 'None'}")
@@ -291,7 +294,10 @@ class Battlefield:
         for unit in list(units):  # list() pour éviter la modification pendant l'itération
             if getattr(unit, 'network_owner', -1) == data["player_id"]:
                 self.remove_unit(unit.id)
-        
+        #Vérification de la validité des données reçues pour éviter les crashs
+        if "player_id" not in data or "units" not in data or not isinstance(data["player_id"], int) or not isinstance(data["units"], list):
+            print(f"Données de handshake invalides reçues : {data}")
+            return
         player_id = data["player_id"]
         remote_units = data["units"]
         from util.UnitsFactory import UnitsFactory
@@ -299,7 +305,7 @@ class Battlefield:
         factory = UnitsFactory()
 
         for u_data in remote_units:
-            unit_id = u_data["id"] 
+            unit_id = u_data["id"]
             unit_type = u_data["type"]
             
             # Création de l'unité
@@ -326,6 +332,10 @@ class Battlefield:
         for unit in list(units):  # list() pour éviter la modification pendant l'itération
             if getattr(unit, 'network_owner', -1) == data["player_id"]:
                 self.remove_unit(unit.id)
+         #Vérification de la validité des données reçues pour éviter les crashs
+        if "player_id" not in data or "units" not in data or not isinstance(data["player_id"], int) or not isinstance(data["units"], list):
+            print(f"Données de acknowledgment invalides reçues : {data}")
+            return
         
         player_id = data["player_id"]
         remote_units = data["units"]
@@ -380,6 +390,11 @@ class Battlefield:
         Met à jour l'état d'une unité sur la carte locale à partir d'un message réseau.
         Format attendu : {"type": "update", "id": 2010, "hp": 45, "network_owner": 1, "x": 50.5, "y": 42.0}
         """
+
+        #Vérification de la validité des données reçues pour éviter les crashs
+        if not any (k in msg for k in ["id", "hp", "network_owner", "x", "y"]) or not isinstance(msg.get("id"), int) or not isinstance(msg.get("hp"), (int, float)) or not isinstance(msg.get("network_owner"), int) or not isinstance(msg.get("x"), (int, float)) or not isinstance(msg.get("y"), (int, float)):
+            print(f"Données de mise à jour invalides reçues : {msg}")
+            return
         unit_id = msg.get("id")
 
         # Vérification de sécurité : l'unité existe-t-elle sur notre carte ?
