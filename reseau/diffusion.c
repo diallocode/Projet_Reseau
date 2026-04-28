@@ -191,7 +191,7 @@ char *diffusion_message_sens2(int reseau_fd){
         case 5:
         case 0: /* MOVE, UPDATE, HANDSHAKE etc. */
             printf("Message Reçu\n");
-            usleep(500000);
+            usleep(5000);
 
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);
 
