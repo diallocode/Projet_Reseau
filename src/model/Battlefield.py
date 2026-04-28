@@ -402,7 +402,7 @@ class Battlefield:
         
       
         ids_to_remove = [
-            uid for uid, unit in self.battlefield.troupes.items() 
+            uid for uid, unit in self.troupes.items() 
             if getattr(unit, 'network_owner', -1) == player_id
         ]
         
