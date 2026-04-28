@@ -72,8 +72,14 @@ class Battle:
                     elif msg["type"] == "acknowledgment":
                         print(f"Acknowledgment reçu pour le message")
                         self.battlefield._handle_acknowledgment(msg)
+                    elif msg["type"] == "property_answer":
+                        self.battlefield._handle_property_answer(msg)
+                    elif msg["type"] == "property_request":
+                        self.battlefield._handle_property_request(msg, self.general)
+                        
                     else:
                         print(f"Message inconnu reçu : {msg}")
+                    
                 self.handle_event()
                 if not self.paused:
                     for _ in range(self.speed):
