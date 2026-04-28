@@ -12,6 +12,11 @@ int nb_joueur_connecte = 0;
 
 //  La fonction pour ajouter un contact
 void add_peer_if_new(struct sockaddr_in new_peer_addr) {
+    printf("[DEBUG] Tentative ajout pair : %s:%d\n",
+    inet_ntoa(new_peer_addr.sin_addr),
+    ntohs(new_peer_addr.sin_port));  // ← ce port est-il bien 5002 ?
+
+
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == new_peer_addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == new_peer_addr.sin_port) {
@@ -21,6 +26,7 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
    if (nb_joueur_connecte < NB_JOUEUR_MAX) {
        paire_connected[nb_joueur_connecte].addr = new_peer_addr;
        paire_connected[nb_joueur_connecte].dernier_vu = time(NULL);
+       paire_connected[nb_joueur_connecte].id = 0;
        nb_joueur_connecte++;
        printf("[CARNET] Nouveau pair ajouté ! Total : %d\n", nb_joueur_connecte);
    }
@@ -104,24 +110,15 @@ int remove_peer(int index) {
 }
 
 
-// AJOUTE CETTE FONCTION : Pour dire Il est vivant !
-/*void actualiser_activite(struct sockaddr_in addr, uint32_t id_joueur) {
-    for (int i = 0; i < nb_joueur_connecte; i++) {
-        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
-            paire_connected[i].addr.sin_port == addr.sin_port) {
-            paire_connected[i].dernier_vu = time(NULL); // On remet le chrono à zéro
-            return;
-        }
-    }
-}*/
-
 void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
+    printf("[DEBUG] actualiser_activite cherche %s:%d\n",
+    inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == addr.sin_port) {
           
            paire_connected[i].dernier_vu = time(NULL);
-           // NOUVEAU : On met à jour le carnet avec le vrai ID de l'adversaire !
+           // On met à jour le carnet avec le vrai ID de l'adversaire !
            paire_connected[i].id = vrai_id_joueur;
           
            return;
@@ -152,7 +149,7 @@ void afficher_liste_joueurs() {
             // Calcul du temps écoulé depuis le dernier message reçu
             int inactif_depuis = temps_actuel - joueurs[i].dernier_vu;
 
-            printf(" [%d] Joueur ID : %d | IP : %s | Port : %d | Inactif depuis : %ds\n", 
+            printf(" [%d] Joueur ID : %u | IP : %s | Port : %d | Inactif depuis : %ds\n", 
                    i, joueurs[i].id, ip, port, inactif_depuis);
         }
     }

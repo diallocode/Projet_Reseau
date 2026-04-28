@@ -28,59 +28,54 @@ class Battle:
         elif self.view:
             self.mode_terminal = True
 
-        if not self.view:
-            self.speed = HEADLESS_SPEEDUP
-        else:
-            self.speed = 1
-
-        self.network_manager: NetworkManager = network_manager
-
-    # ===================================================================
-    #                           MAIN SIMULATION
-    # ===================================================================
-    def start(self, is_tourney=False):
-        if self.view and hasattr(self.view, 'screen'):
+   # ===================================================================
+   #                           MAIN SIMULATION
+   # ===================================================================
+    def start(self, network_data, is_tourney=False):
+        if self.view and hasattr(self.view, 'screen'):  # GUI has screen attribute
+            # Pygame already initialized in GUI.__init__
             pass
 
         running = True
         clock = pygame.time.Clock()
-        dt = 0
-
-        self._send_handshake()  # Annonce notre armée au démarrage
-
+        dt = 0  # Delta time (time between frames, in milliseconds)
+        start = False
+       # ==================== Main real-time loop ====================
         while running:
-            if self.view and hasattr(self.view, 'clock'):
-                dt = self.view.clock.tick(FPS) / 1000
-            elif self.view:
-                time.sleep(1.0 / FPS)
-                dt = 1.0 / FPS
-            else:
-                dt = clock.tick(FPS * self.speed) / 1000
-
-            for msg in self.network_manager.get_messages():
-                if msg["type"] == "handshake" or msg["type"] == "acknowledgment":
-                    print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
-                    self.battlefield._handle_new_player(msg, self.general)
-                elif msg["type"] == "update":
-                    print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
-                    self.battlefield._handle_unit_update(msg)
-                elif msg["type"] == "player_disconnected":
-                    self.battlefield._handle_disconnect(msg)
+            if start:
+                if self.view and hasattr(self.view, 'clock'):  # GUI has pygame.Clock
+                    dt =  self.view.clock.tick(FPS) / 1000  # Delta time in seconds
+                elif self.view:
+                    # For Console : no pygame, time.sleep using
+                    time.sleep(1.0 / FPS)  # Framerate simulation
+                    dt = 1.0 / FPS
                 else:
-                    print(f"Message inconnu reçu : {msg}")
-
-            self.handle_event()
-
-            if not self.paused:
-                for _ in range(self.speed):
-                    self.general.play(self.battlefield)
-                    self.battlefield.update(self.general, dt)
-
-                self._send_update()  # Envoi des positions à chaque tick réseau
-
-                if self.view:
-                    self.view.update()
-
+                    # Without view mode
+                    dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode    
+                for msg in self.network_manager.get_messages():
+                    if msg["type"] == "handshake":
+                        print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
+                        self.battlefield._handle_new_player(msg, self.general)
+                    elif msg["type"] == "update":
+                        print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
+                        self.battlefield._handle_unit_update(msg)
+                    elif msg["type"] == "player_disconnected":
+                        self.battlefield._handle_disconnect(msg)
+                    elif msg["type"] == "acknowledgment":
+                        print(f"Acknowledgment reçu pour le message")
+                        self.battlefield._handle_acknowledgment(msg)
+                    else:
+                        print(f"Message inconnu reçu : {msg}")
+                self.handle_event()
+                if not self.paused:
+                    for _ in range(self.speed):
+                        self.general.play(self.battlefield)
+                        self.battlefield.update(self.general,dt)
+                    if self.view:
+                        self.view.update()
+            else:
+                self.network_manager.send_to_c(network_data)
+                start = True
         if self.view:
             exit_loop = True
             while exit_loop:

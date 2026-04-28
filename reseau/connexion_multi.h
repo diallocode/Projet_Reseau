@@ -1,13 +1,14 @@
-#ifndef OUMAR_H
-#define OUMAR_H
+#ifndef CONNEXION_MULTI_H
+#define CONNEXION_MULTI_H
 
 #include <netinet/in.h> // Requis pour la structure sockaddr_in
 #include <time.h> 
+#include <stdint.h>  
 
 // Structure représentant un joueur dans le carnet d'adresses
 struct paire {
     struct sockaddr_in addr;
-    int id;
+    uint32_t id;
     time_t dernier_vu;
 };
 
@@ -46,4 +47,4 @@ void actualiser_activite(struct sockaddr_in addr, uint32_t id_joueur);
 /* * Affiche la liste détaillée de tous les joueurs actuellement connectés dans le terminal. */
 void afficher_liste_joueurs();
 
-#endif // OUMAR_H
+#endif // CONNEXION_MULTI_H
