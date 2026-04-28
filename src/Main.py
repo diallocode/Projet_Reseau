@@ -31,8 +31,9 @@ if __name__ == '__main__':
 
         general1 = data.get("general")
         all_units = data.get("my_units")
+        network_data = data.get("network_data")
 
-        battlefield = Battlefield(COLS, ROWS, all_units, generate_heightmap(COLS, ROWS))
+        battlefield = Battlefield(COLS, ROWS, all_units, network_manager, generate_heightmap(COLS, ROWS))
 
         # Initialisation de la vue (Console ou GUI)
         if args.terminal:
@@ -44,9 +45,11 @@ if __name__ == '__main__':
         battle = Battle(general1, battlefield, network_manager, view)
 
         if args.plot:
-            battle.collectStats = True
-
-        battle.start()
+            battle.collectStats = True       
+        
+        battle.start(network_data)
+        
+        
 
 
     if args.command == 'load':

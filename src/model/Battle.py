@@ -40,78 +40,68 @@ class Battle:
    # ===================================================================
    #                           MAIN SIMULATION
    # ===================================================================
-   def start(self,is_tourney=False):
-    
-
-       if self.view and hasattr(self.view, 'screen'):  # GUI has screen attribute
-           # Pygame already initialized in GUI.__init__
-           pass
-
-
-
-       running = True
-       clock = pygame.time.Clock()
-       dt = 0  # Delta time (time between frames, in milliseconds)
-
+   def start(self, network_data, is_tourney=False):
+        if self.view and hasattr(self.view, 'screen'):  # GUI has screen attribute
+            # Pygame already initialized in GUI.__init__
+            pass
+        running = True
+        clock = pygame.time.Clock()
+        dt = 0  # Delta time (time between frames, in milliseconds)
+        start = False
        # ==================== Main real-time loop ====================
-       while running:
-
-           if self.view and hasattr(self.view, 'clock'):  # GUI has pygame.Clock
-               dt =  self.view.clock.tick(FPS) / 1000  # Delta time in seconds
-             
-           elif self.view:
-               # For Console : no pygame, time.sleep using
-               time.sleep(1.0 / FPS)  # Framerate simulation
-               dt = 1.0 / FPS
-           else:
-               # Without view mode
-               dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode
-              
-           for msg in self.network_manager.get_messages():
-               if msg["type"] == "handshake":
-                   print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
-                   self.battlefield._handle_new_player(msg)
-               elif msg["type"] == "update":
-                   print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
-                   self.battlefield._handle_unit_update(msg)
-               elif msg["type"] == "player_disconnected":
-                   self.battlefield._handle_disconnect(msg)
-
-           self.handle_event()
-        
-           if not self.paused:
-              
-               for _ in range(self.speed):
-                   self.general.play(self.battlefield)
-                   self.battlefield.update(self.general,dt)
-                  
-                   # --- EXPÉDITION VERS LE RÉSEAU ---
-                   if self.battlefield.outgoing_network_events:
-                       for event in self.battlefield.outgoing_network_events:
-                           self.network_manager.send_to_c(event)
-                      
-                       # On vide la boîte d'envoi pour la prochaine frame !
-                       self.battlefield.outgoing_network_events.clear()
-                       
-               if self.view:
-                   self.view.update()
-        
-       if self.view:
-           exit_loop = True
-           while exit_loop:
-               clock.tick(FPS)
-               for event in pygame.event.get():
-                   if event.type == pygame.QUIT:
-                       exit_loop = False
-                   elif event.type == pygame.KEYDOWN:
-                       # Press ESC to quit win screen
-                       if event.key == pygame.K_ESCAPE:
-                           exit_loop = False
-               self.view.update()
-
-
-
-
+        while running:
+            if start:
+                if self.view and hasattr(self.view, 'clock'):  # GUI has pygame.Clock
+                    dt =  self.view.clock.tick(FPS) / 1000  # Delta time in seconds
+                elif self.view:
+                    # For Console : no pygame, time.sleep using
+                    time.sleep(1.0 / FPS)  # Framerate simulation
+                    dt = 1.0 / FPS
+                else:
+                    # Without view mode
+                    dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode    
+                for msg in self.network_manager.get_messages():
+                    if msg["type"] == "handshake":
+                        print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
+                        self.battlefield._handle_new_player(msg, self.general)
+                    elif msg["type"] == "update":
+                        print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
+                        self.battlefield._handle_unit_update(msg)
+                    elif msg["type"] == "player_disconnected":
+                        self.battlefield._handle_disconnect(msg)
+                    elif msg["type"] == "acknowledgment":
+                        print(f"Acknowledgment reçu pour le message")
+                        self.battlefield._handle_acknowledgment(msg)
+                    elif msg["type"] == "property_answer":
+                        self.battlefield._handle_property_answer(msg)
+                    elif msg["type"] == "property_request":
+                        self.battlefield._handle_property_request(msg, self.general)
+                        
+                    else:
+                        print(f"Message inconnu reçu : {msg}")
+                    
+                self.handle_event()
+                if not self.paused:
+                    for _ in range(self.speed):
+                        self.general.play(self.battlefield)
+                        self.battlefield.update(self.general,dt)
+                    if self.view:
+                        self.view.update()
+            else:
+                self.network_manager.send_to_c(network_data)
+                start = True
+        if self.view:
+            exit_loop = True
+            while exit_loop:
+                clock.tick(FPS)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        exit_loop = False
+                    elif event.type == pygame.KEYDOWN:
+                        # Press ESC to quit win screen
+                        if event.key == pygame.K_ESCAPE:
+                            exit_loop = False
+                self.view.update()
 
    def handle_event(self):
        """
@@ -129,10 +119,7 @@ class Battle:
        if not self.view or not hasattr(self.view, 'screen'):
            return
 
-
-
        keys = pygame.key.get_pressed()
-
 
        for event in pygame.event.get():
            if event.type == pygame.QUIT:

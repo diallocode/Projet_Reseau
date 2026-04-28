@@ -3,6 +3,9 @@ import socket
 import queue
 import json
 from Constant import HOST, PORT
+import os
+
+MYPORT = 5003
 
 class NetworkManager:
     def __init__(self, host=HOST, port=PORT): 
@@ -17,6 +20,9 @@ class NetworkManager:
         # On définit l'adresse du C
         self.c_address = (host, port)
 
+        # On bind notre socket à MYPORT pour recevoir les messages du C
+        self.socket.bind((HOST, MYPORT))
+
         # 2. Handshake (Phase bloquante)
         self.wait_initialization()
 
@@ -24,19 +30,32 @@ class NetworkManager:
         self.listener_thread = threading.Thread(target=self.listen_for_messages, daemon=True)
         self.listener_thread.start()
 
-    def wait_initialization(self):
-        print("En attente du processus C pour recevoir l'ID...")
-        # On envoie un petit "Hello" au C pour qu'il connaisse notre port
-        self.send_to_c({"type": "hello"})
-        
-        # On attend la réponse (Buffer de 65k pour être large)
-        data, _ = self.socket.recvfrom(65535)
-        msg = json.loads(data.decode('utf-8'))
-        
-        if msg.get("type") == "init":
-            self.my_player_id = msg.get("player_id")
-            print(f"ID reçu : {self.my_player_id}")
 
+    def wait_initialization(self):
+        print("Initialisation locale de l'ID joueur...")
+        try:
+            # 1. Tentative de récupération du PID
+            id_joueur = os.getpid()
+            
+            # 2. Vérification de la validité de l'ID
+            if id_joueur is None or id_joueur <= 0:
+                raise ValueError("L'OS a renvoyé un PID invalide.")
+
+            # 3. Assignation
+            self.my_player_id = id_joueur
+            print(f"ID attribué (PID) : {self.my_player_id}")
+
+            # 4. Notification au processus C
+            # Même si l'ID est local, le C doit savoir qui on est pour nous router les messages
+            self.send_to_c({"type": "connected", "player_id": self.my_player_id})
+
+        except OSError as e:
+            print(f"Erreur système lors de la récupération du PID : {e}")
+            self.my_player_id = 0 # Valeur par défaut pour éviter 'None'
+        except Exception as e:
+            print(f"Erreur inattendue : {e}")
+            self.my_player_id = 0
+            
     def listen_for_messages(self):
         while True:
             try:
@@ -52,11 +71,12 @@ class NetworkManager:
 
     def send_to_c(self, message):
         try:
-            # En UDP on utilise sendto vers l'adresse du C
             data = json.dumps(message).encode('utf-8')
-            self.socket.sendto(data, self.c_address)
+            # sendto retourne le nombre d'octets envoyés
+            sent_bytes = self.socket.sendto(data, self.c_address)
+            print(f"[Network] {sent_bytes} octets envoyés à C : {message}")
         except Exception as e:
-            print(f"Erreur envoi : {e}")
+            print(f"[Network] Erreur envoi : {e}")
             
     def get_messages(self):
         """

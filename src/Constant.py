@@ -28,7 +28,7 @@ PAUSE_OVERLAY_COLOR = (0, 0, 0, 120)
 # BattleTournament' Scenarios
 DEFAULT_SCENARIOS = [
    
-    {"Crossbowman":5, "Pikeman":0,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
+    {"Crossbowman":5, "Pikeman":5,"Knight":5,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":20,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":0,"Knight":20,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     
@@ -67,4 +67,4 @@ PLOTS_FOLDER = "../save/plots/"
 
 
 HOST = "127.0.0.1"
-PORT =  7000
+PORT =  5001
