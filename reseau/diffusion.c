@@ -2,7 +2,7 @@
 #include "cJSON.h"
 #include "connexion_multi.h"
 
-// Le point de départ de ta file d'attente
+// Le point de départ de la file d'attente
 NoeudAttente *file_attente = NULL;
 
 static uint8_t mon_id_joueur = 0;
@@ -191,6 +191,8 @@ char *diffusion_message_sens2(int reseau_fd){
         case 5:
         case 0: /* MOVE, UPDATE, HANDSHAKE etc. */
             printf("Message Reçu\n");
+            usleep(500000);
+
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);
 
             char *donnee_json = malloc(taille_json + 1);
