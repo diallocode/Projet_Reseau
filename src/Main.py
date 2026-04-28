@@ -28,21 +28,23 @@ if __name__ == '__main__':
         # On passe le fameux player_id au ScenarioMaker !
         scenario_maker = ScenarioMaker(get_scenario(), player_id, args.AI)
         data = scenario_maker.get_data()
+        
+        generaux = []
+        generaux.append(data.get("general"))
 
-        general1 = data.get("general")
         all_units = data.get("my_units")
         network_data = data.get("network_data")
 
-        battlefield = Battlefield(COLS, ROWS, all_units, network_manager, generate_heightmap(COLS, ROWS))
+        battlefield = Battlefield(COLS, ROWS, generaux, all_units, network_manager, generate_heightmap(COLS, ROWS))
 
         # Initialisation de la vue (Console ou GUI)
         if args.terminal:
             view = Console(battlefield)
         else:
-            view = GUI(battlefield, [general1], VIEW_ELEVATION)
+            view = GUI(battlefield, generaux, VIEW_ELEVATION)
 
         # On passe le network_manager à la Battle pour qu'elle puisse lire les messages
-        battle = Battle(general1, battlefield, network_manager, view)
+        battle = Battle(data.get("general"), battlefield, network_manager, view)
 
         if args.plot:
             battle.collectStats = True       

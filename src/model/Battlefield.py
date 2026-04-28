@@ -3,6 +3,7 @@ import random
 from Constant import UNIT_RADIUS
 from Network.NetworkManager import NetworkManager
 from model.General import General
+from util.Functions import create_strategy
 
 class Battlefield:
     """
@@ -18,7 +19,7 @@ class Battlefield:
         Dictionnaire mapping army_id -> Army.
     """
 
-    def __init__(self, width: float, height: float, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
+    def __init__(self, width: float, height: float, generaux:list, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
         """
         Initializes a continuous battlefield.
 
@@ -35,6 +36,8 @@ class Battlefield:
        
         self.troupes = {}           # Dictionary will contains id:Unit
         self.width = width
+        self.generaux = generaux
+        self.nb_pb_incoherence_handled = 0
         self.height = height
         self.heightmap = heightmap
         self.create_troupe(troupes)
@@ -329,7 +332,7 @@ class Battlefield:
         for unit in list(units):  # list() pour éviter la modification pendant l'itération
             if getattr(unit, 'network_owner', -1) == data["player_id"]:
                 self.remove_unit(unit.id)
-        
+        self.generaux.append(General(f"General {data['player_id']}", data["player_id"], create_strategy(data.get("ia_strategy"))))  # On ajoute le général à la liste des généraux pour la vue
         player_id = data["player_id"]
         remote_units = data["units"]
         from util.UnitsFactory import UnitsFactory

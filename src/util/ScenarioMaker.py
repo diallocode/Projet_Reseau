@@ -12,7 +12,8 @@ class ScenarioMaker:
         self.network_data = {
             "type": "handshake",
             "player_id": self.player_id,
-            "units": []
+            "units": [],
+            "ia_strategy": self.iaName
         }
         self.units_factory = UnitsFactory()
         self.all_units  = {}

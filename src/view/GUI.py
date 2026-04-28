@@ -29,10 +29,8 @@ class GUI(View):
         self.show_info_panel = True
         self.view_elevation = view_elevation
         
-
-
         # Animation banners
-        self.banner_anim_progress = [0.0, 0.0]
+        self.banner_anim_progress = [0.0]*4
         self.banner_open_speed = 0.01
 
         # --- Initialize Pygame ---
@@ -284,53 +282,71 @@ class GUI(View):
         """
         Aggregates and renders the HUD info panels (Banners) for the Generals,
         displaying unit counts and animating the banner's opening.
+        Supports up to 4 generals: 2 per side (left/right), stacked vertically.
+        Also displays the incoherence counter in the top-left corner.
         """
         banner_height = BANNER_HEIGHT
         banner_width = self.screen_w // 4
         margin = 10
+        gap = 5  # vertical gap between the two banners on the same side
 
-        for i, g in enumerate(self.generaux[:2]):
+        colors = [
+            (170,  40,  40),   # General 0 – top-left   (red)
+            ( 40,  80, 180),   # General 1 – top-right  (blue)
+            (180, 120,  40),   # General 2 – bot-left   (orange)
+            ( 40, 160,  80),   # General 3 – bot-right  (green)
+        ]
 
+        for i, g in enumerate(self.generaux[:4]):
+            side = i % 2          # 0 = left, 1 = right
+            row  = i // 2         # 0 = top row, 1 = bottom row
 
-
-            # Pick side and color
-            if i == 0:
-                base_x = margin
-                color = (170, 40, 40)  # Red
-            else:
-                base_x = self.screen_w - banner_width - margin
-                color = (40, 80, 180)  # Blue
+            base_x = margin if side == 0 else self.screen_w - banner_width - margin
+            base_y = margin + row * (banner_height + gap)
 
             # Animate
-            self.banner_anim_progress[i] = min(1.0, self.banner_anim_progress[i] + self.banner_open_speed)
+            self.banner_anim_progress[i] = min(
+                1.0, self.banner_anim_progress[i] + self.banner_open_speed
+            )
 
             # Draw banner
             self.draw_banner(
                 self.screen,
-                base_x,
-                margin,
-                banner_width,
-                banner_height,
-                color,
+                base_x, base_y,
+                banner_width, banner_height,
+                colors[i],
                 self.banner_anim_progress[i],
             )
 
-            # Draw text only after banner partly opened
+            # Draw text only after banner is partly opened
             if self.banner_anim_progress[i] > 0.4:
                 x = base_x + 20
-                y = margin + 10
-
-                self.draw_text_shadow(self.screen, g.name + " : " + str(g.strategy), x, y, (255, 230, 200))
-
+                y = base_y + 10
+                self.draw_text_shadow(
+                    self.screen,
+                    g.name + " : " + str(g.strategy),
+                    x, y, (255, 230, 200),
+                )
                 unit_counts = {}
                 for u in g.get_my_units(self.battlefield):
                     if u.is_alive():
                         unit_counts[u.name] = unit_counts.get(u.name, 0) + 1
-
                 y += 30
                 for unit_type, count in unit_counts.items():
-                    self.draw_text_shadow(self.screen, f"{unit_type}: {count}", x, y, (255, 255, 255))
+                    self.draw_text_shadow(
+                        self.screen, f"{unit_type}: {count}", x, y, (255, 255, 255)
+                    )
                     y += 18
+
+        # ── Incoherence counter – top-left corner, drawn last (always on top) ──
+        nb = self.battlefield.nb_pb_incoherence_handled
+        font_big  = pygame.font.SysFont(None, 46)
+        # Shadow
+        shadow = font_big.render(str(nb), True, (30, 30, 30))
+        self.screen.blit(shadow, (margin + 2, margin + 2))
+        # Value
+        surf = font_big.render(str(nb), True, (255, 215, 50))
+        self.screen.blit(surf, (margin, margin))
 
 
     def draw_camera_view(self):
