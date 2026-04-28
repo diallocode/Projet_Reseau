@@ -67,13 +67,19 @@ class Battle:
                     elif msg["type"] == "update":
                         print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                         self.battlefield._handle_unit_update(msg)
-                    elif msg["type"] == "player_disconnected":
+                    elif msg["type"] == "disconnect":
                         self.battlefield._handle_disconnect(msg)
                     elif msg["type"] == "acknowledgment":
                         print(f"Acknowledgment reçu pour le message")
                         self.battlefield._handle_acknowledgment(msg)
+                    elif msg["type"] == "property_answer":
+                        self.battlefield._handle_property_answer(msg)
+                    elif msg["type"] == "property_request":
+                        self.battlefield._handle_property_request(msg, self.general)
+                        
                     else:
                         print(f"Message inconnu reçu : {msg}")
+                    
                 self.handle_event()
                 if not self.paused:
                     for _ in range(self.speed):

@@ -257,6 +257,7 @@ int main(int argc, char *argv[]) {
                         if (ret < 0) {
                             perror("Erreur envoi vers Python");
                         } else {
+                            printf("Message Recu : %s\n", json_propre);
                             printf("[RÉSEAU→PYTHON] JSON transmis au jeu !\n");
                         }
                         cJSON_Delete(msg);
