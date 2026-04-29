@@ -1,6 +1,7 @@
 #include "diffusion.h"
 #include "cJSON.h"
 #include "connexion_multi.h"
+#include <unistd.h>
 
 // Le point de départ de ta file d'attente
 NoeudAttente *file_attente = NULL;
@@ -9,8 +10,7 @@ static uint8_t mon_id_joueur = 0;
 static uint32_t compteur_sequence = 0;
 
 // Python->Reseau
-int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg)
-{
+int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg){
 
     EnteteUDP enveloppe;        
     enveloppe.taille_payload = htons((uint16_t)strlen(donnee_json));
@@ -24,8 +24,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
 
     int TAILLE_PAQUET = strlen(donnee_json) + sizeof(EnteteUDP); 
     char *Buffer = malloc(TAILLE_PAQUET);
-    if (Buffer == NULL)
-    {
+    if(Buffer == NULL){
         printf("erreur d'allocation du buffer");
         return -1;
     }
@@ -70,9 +69,7 @@ void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, str
     if(sendto(mon_socket_udp, &enveloppe, sizeof(EnteteUDP), 0,
               (struct sockaddr*)&dest, sizeof(struct sockaddr_in)) < 0) {
         printf("[ERREUR] Impossible d'envoyer le message système (Type %d)\n", type_msg);
-    }
-    else
-    {
+    } else {
         printf("[RÉSEAU] Message système (Type %d) envoyé avec succès.\n", type_msg);
     }
 }
@@ -83,10 +80,9 @@ char *diffusion_message_sens2(int reseau_fd){
     socklen_t addr_len = sizeof(addr_distant);      
 
     int size_chaine_json = 10049;
-    int TAILLE_PAQUET = size_chaine_json + sizeof(EnteteUDP);
+    int TAILLE_PAQUET = size_chaine_json + sizeof(EnteteUDP); 
     char *Buffer = malloc(TAILLE_PAQUET);
-    if (Buffer == NULL)
-    {
+    if(Buffer == NULL){
         printf("erreur d'allocation du buffer");
         return NULL;
     }
@@ -229,6 +225,16 @@ char *diffusion_message_sens2(int reseau_fd){
                 free(Buffer);
                 return json_nouveau_recu;
             }
+            case 7: /* ALLIANCE */
+                printf("[ALLIANCE] Message alliance reçu !\n");
+                {
+                    char *json_alliance_recu = malloc(taille_json + 1);
+                    if (!json_alliance_recu) { free(Buffer); return NULL; }
+                    memcpy(json_alliance_recu, Buffer + sizeof(EnteteUDP), taille_json);
+                    json_alliance_recu[taille_json] = '\0';
+                    free(Buffer);
+                    return json_alliance_recu;
+                }
 
         default:
             printf("[ALERTE] Type de message inconnu reçu.\n");
@@ -249,8 +255,7 @@ void verifier_retransmissions(int mon_socket_udp) {
             int taille_totale = sizeof(EnteteUDP) + taille_json;
 
             char *BufferRelance = malloc(taille_totale);
-            if (BufferRelance != NULL)
-            {
+            if (BufferRelance != NULL) {
                 memcpy(BufferRelance, &actuel->entete, sizeof(EnteteUDP));
                 memcpy(BufferRelance + sizeof(EnteteUDP), actuel->payload, taille_json);
 
