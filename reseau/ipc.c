@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "socket_compat.h"
+
 #include "cJSON.h"
 #include "diffusion.h"
 #include "connexion_multi.h"
@@ -39,17 +39,23 @@ uint32_t obtenir_type_message(const char *donnee_json) {
 
 int main(int argc, char *argv[]) {
 
+    // --- INITIALISATION MULTIPLATEFORME ---
+    if (network_init() != 0) {
+        fprintf(stderr, "Erreur : Impossible d'initialiser la pile réseau.\n");
+        return 1;
+    }
     // Port d'écoute réseau passé en argument, 5002 par défaut
     int mon_port   = (argc > 1) ? atoi(argv[1]) : 5002;
     int port_python_recv = (argc > 2) ? atoi(argv[2]) : 5001;
     int port_python_send = (argc > 3) ? atoi(argv[3]) : 5003;
 
-
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        perror("Erreur création socket");
+// --- CRÉATION DES SOCKETS --- et changement de la syntaxe pour utiliser SOCKET_T
+    SOCKET_T sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock == INVALID_SOCKET_T) { // Utilise la macro au lieu de < 0
+        perror("Erreur création socket local");
+        network_cleanup();
         exit(1);
-    }
+}
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -69,7 +75,13 @@ int main(int argc, char *argv[]) {
     socklen_t python_addr_len = sizeof(python_addr);
 
     // Socket de reception reseau 
-    int reseau_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    //change de la syntaxe pour utiliser SOCKET_T et ajout du bind pour le socket reseau
+    SOCKET_T reseau_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (reseau_fd == INVALID_SOCKET_T) {
+        perror("Erreur création socket réseau");
+        network_cleanup();
+        exit(1);
+}
     struct sockaddr_in reseau_addr;
     memset(&reseau_addr, 0, sizeof(reseau_addr));
     reseau_addr.sin_family = AF_INET;
@@ -232,6 +244,8 @@ int main(int argc, char *argv[]) {
     }
 }
 
+    // --- NETTOYAGE FINAL ---
+    network_cleanup();
     return 0;   
 }
     

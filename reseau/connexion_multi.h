@@ -1,6 +1,7 @@
 #ifndef CONNEXION_MULTI_H
 #define CONNEXION_MULTI_H
 
+#include "socket_compat.h"
 #include <netinet/in.h> // Requis pour la structure sockaddr_in
 #include <time.h> 
 #include <stdint.h>  
@@ -33,7 +34,7 @@ struct paire* get_connected_peers(int *count);
 void afficher_mes_ips();
 
 //fonction pour fermer la connexion 
-int close_socket(int sockfd);
+int close_socket(SOCKET_T sockfd);
 
 int remove_peer(int index);
 //qelqu'un qui se deconecte via @ip et port

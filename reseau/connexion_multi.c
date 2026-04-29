@@ -1,10 +1,11 @@
+#include "socket_compat.h"   // de l'entete socket_compat pour la compatibilité entre Windows et Debian
 #include "connexion_multi.h"
 #include <stdio.h>
 #include <string.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
+#include <time.h> 
+#ifndef _WIN32
+#include <ifaddrs.h> // Uniquement pour Linux
+#endif
 #define NB_JOUEUR_MAX 5
 
 struct paire paire_connected[NB_JOUEUR_MAX];
@@ -39,6 +40,9 @@ struct paire* get_connected_peers(int *count) {
 }
 
 // La fonction pour afficher les IP (extraite de son main)
+
+//on la protege selon qu'il soit compilé sur Windows ou Linux pour eviter les erreurs de compilation sur Windows
+#ifndef _WIN32
 void afficher_mes_ips() {
    struct ifaddrs *ifaddrp, *ifad;
    char *addr;
@@ -55,10 +59,15 @@ void afficher_mes_ips() {
    printf("----------------------------------\n");
    freeifaddrs(ifaddrp);
 }
+#else
+void afficher_mes_ips() {
+    printf("Affichage des IPs non supporté sur Windows pour le moment.\n");
+}
+#endif
 
 
-int close_socket(int sockfd) {
-     close(sockfd);
+int close_socket(SOCKET_T sockfd) { // on Change int par SOCKET_T pour gerer les tailles de socket sur les deux OS
+     CLOSE_SOCKET(sockfd); // Utilise la macro pour garantir la compatibilité
      return 0;
 }
 
