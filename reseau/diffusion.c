@@ -73,6 +73,15 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
 
         // On verifie si on doit envoyer a ce joueur
         if(cible_id == -1 || players[i].id == cible_id){
+            // --- AJOUT DES LOGS DE PREUVE ---
+            if (cible_id == -1) {
+                printf("[ROUTAGE] BROADCAST : Envoi à tout le monde -> IP: %s (ID: %u)\n", 
+                       inet_ntoa(players[i].addr.sin_addr), players[i].id);
+            } else {
+                printf("[ROUTAGE] UNICAST : Message privé ciblé -> IP: %s (ID: %u)\n", 
+                       inet_ntoa(players[i].addr.sin_addr), players[i].id);
+            }
+            
             struct sockaddr_in dest_addr = players[i].addr;
 
             if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, 0,
@@ -94,6 +103,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
             }
             // C'est un message cible et on a trouve la cible, on s'arrete
             if(cible_id != -1){
+                printf("[CIBLE] : Network_owner -> %d\n", cible_id);
                 break;
             }
 

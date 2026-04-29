@@ -164,7 +164,7 @@ void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == addr.sin_port) {
           
-           paire_connected[i].dernier_vu = get_time();
+           paire_connected[i].dernier_vu = time(NULL);
            paire_connected[i].id = vrai_id_joueur; // On met à jour le carnet avec le vrai ID de l'adversaire !
           
            return;
