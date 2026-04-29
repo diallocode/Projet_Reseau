@@ -113,13 +113,24 @@ int remove_peer(int index) {
 void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
     printf("[DEBUG] actualiser_activite cherche %s:%d\n",
     inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+    //On parcourt notre carnet d'adresses
    for (int i = 0; i < nb_joueur_connecte; i++) {
+        if (paire_connected[i].id == vrai_id_joueur) {
+            
+            // On verifie que m ce n'est PAS la même adresse IP ou le même Port qu'un autre joueur !
+            if (paire_connected[i].addr.sin_addr.s_addr != addr.sin_addr.s_addr || 
+                paire_connected[i].addr.sin_port != addr.sin_port) {
+                
+                printf("[ALERTE] USURPATION D'IDENTITÉ ! L'ID %d est déjà utilisé par un autre joueur.\n", vrai_id_joueur);
+                return; // On rejette ce paquet, on ne met pas à jour l'activité !
+            }
+        }
+
        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == addr.sin_port) {
           
-           paire_connected[i].dernier_vu = time(NULL);
-           // On met à jour le carnet avec le vrai ID de l'adversaire !
-           paire_connected[i].id = vrai_id_joueur;
+           paire_connected[i].dernier_vu = get_time();
+           paire_connected[i].id = vrai_id_joueur; // On met à jour le carnet avec le vrai ID de l'adversaire !
           
            return;
        }
