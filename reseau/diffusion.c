@@ -81,7 +81,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
                 printf("[ROUTAGE] UNICAST : Message privé ciblé -> IP: %s (ID: %u)\n", 
                        inet_ntoa(players[i].addr.sin_addr), players[i].id);
             }
-            
+
             struct sockaddr_in dest_addr = players[i].addr;
 
             if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, 0,
@@ -274,7 +274,7 @@ char *diffusion_message_sens2(int reseau_fd){
         case 5:
         case 0: /* MOVE, UPDATE, HANDSHAKE etc. */
             printf("Message Reçu\n");
-            usleep(500000);       // gestion de l'incoherence
+            //usleep(500000);       // gestion de l'incoherence
 
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);
 
