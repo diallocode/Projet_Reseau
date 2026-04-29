@@ -194,9 +194,9 @@ SOCKET_T initialiser_ma_connexion() {
 
     // 1. Création du socket UDP
     sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock == INVALID_SOCKET) {
+    if (sock == INVALID_SOCKET_T) {
         perror("Erreur création socket");
-        return INVALID_SOCKET;
+        return INVALID_SOCKET_T;
     }
 
     // 2. Préparation de l'adresse (Port 0 = Dynamique)
@@ -209,7 +209,7 @@ SOCKET_T initialiser_ma_connexion() {
     if (bind(sock, (struct sockaddr *)&mon_addr, sizeof(mon_addr)) < 0) {
         perror("Erreur bind");
         CLOSE_SOCKET(sock);
-        return INVALID_SOCKET;
+        return INVALID_SOCKET_T;
     }
 
     // 4. Récupération du port attribué pour l'afficher

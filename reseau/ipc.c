@@ -60,9 +60,11 @@ int main(int argc, char *argv[]) {
     addr.sin_port = htons(port_python_recv);
 
     if (bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        printf("Erreur bind local : %d\n", WSAGetLastError());
-        network_cleanup();
-        exit(1);
+        #ifdef _WIN32
+            printf("Erreur bind local : %d\n", WSAGetLastError());
+        #else
+    perror("Erreur bind local"); // La version Linux standard
+        #endif
     }
 
     printf("Processus C en écoute pour Python sur 127.0.0.1:%d\n", port_python_recv);
