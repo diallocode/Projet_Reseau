@@ -45,7 +45,10 @@ class Battlefield:
         """Définit la relation (ex: alliance) entre deux joueurs."""
         if player1_id not in self.diplomacy:
             self.diplomacy[player1_id] = {}
+        if player2_id not in self.diplomacy:
+            self.diplomacy[player2_id] = {}
         self.diplomacy[player1_id][player2_id] = relationship
+        self.diplomacy[player2_id][player1_id] = relationship
 
     # ==========================================================
     #                   UNIT MANAGEMENT
@@ -120,6 +123,7 @@ class Battlefield:
 
         # On utilise notre nouvel attribut réseau !
         my_owner = getattr(unit, 'network_owner', unit.id // 1000)
+
         enemies = []
 
         for target_id, target_unit in self.troupes.items():
@@ -129,15 +133,17 @@ class Battlefield:
             if target_unit.id // 1000 == my_owner:
                 continue  # Skip units from the same player
 
-            #target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
-
+            target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
+            
+            if target_owner == my_owner:
+                continue
             # Résolution diplomatique
             # Par défaut, dans un jeu de guerre sauvage, les inconnus sont des ennemis
             relationship = "enemy" 
             
             # Si on a défini une relation spécifique avec ce joueur, on l'applique
-            #if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
-            #    relationship = self.diplomacy[my_owner][target_owner]
+            if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
+                relationship = self.diplomacy[my_owner][target_owner]
 
             # Si c'est bien un ennemi, on l'ajoute à la liste des cibles
             if relationship == "enemy":
@@ -408,7 +414,13 @@ class Battlefield:
             unit.current_order = None
             unit.target_unit = None            
             self.remove_unit(unit_id)
-    
+
+    def _handle_alliance(self,msg):
+
+        ally_id = msg.get("ally_id")
+        unit_id= msg.get("player_id")
+        self.set_relationship(unit_id,ally_id,"ally")
+        
     def push_network_event(self, event_data):
         print(f"Préparation d'un événement réseau : {event_data}")
         self.network_manager.send_to_c(event_data)
