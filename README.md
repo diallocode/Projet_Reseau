@@ -55,9 +55,10 @@ python3 Main.py plot Daft PlotLanchester Lanchester "[Knight, Pikeman]" "range(1
 
 ```
 ### guide d'usage programme multiplatforme 
-gcc ipc.c diffusion.c connexion_multi.c cJSON.c -o IPC.exe -I. -lws2_32 -std=c99
+gcc ipc.c diffusion.c connexion_multi.c cJSON.c socket_compat.c -o IPC.exe -I. -lws2_32 -std=c99 
 ### sous linux faire 
-gcc ipc.c diffusion.c connexion_multi.c cJSON.c -o IPC -I. -std=c99
+# Dans le dossier reseau/
+gcc ipc.c diffusion.c connexion_multi.c cJSON.c socket_compat.c -o IPC_linux -I. -lpthread -std=c99 
 ### on tourne sur les memes ports 
 ./IPC.exe 
 ### run sous linux  faudra ip et port 
