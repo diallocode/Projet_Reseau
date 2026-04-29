@@ -5,10 +5,20 @@
 
 #include "connexion_multi.h"
 
-
 #define NB_JOUEUR_MAX 5
 
+/**
+ * @brief Tableau stockant la liste des pairs actuellement connus et connectés.
+ * * Ce carnet d'adresses local permet de gérer jusqu'à 10 joueurs. Chaque entrée
+ * contient l'adresse réseau, l'identifiant unique et le timestamp du dernier contact.
+ */
 struct paire paire_connected[NB_JOUEUR_MAX];
+
+/**
+ * @brief Nombre actuel de joueurs enregistrés dans le tableau paire_connected.
+ * * Cette variable sert d'indice pour les boucles de parcours et de limite pour 
+ * l'ajout de nouveaux joueurs.
+ */
 int nb_joueur_connecte = 0;
 
 
@@ -26,7 +36,7 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == new_peer_addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == new_peer_addr.sin_port) {
-           return; // Déjà connu !
+           return; 
        }
    }
    if (nb_joueur_connecte < NB_JOUEUR_MAX) {

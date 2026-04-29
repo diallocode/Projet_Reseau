@@ -3,16 +3,26 @@
  * @brief Implémentation du routage P2P (Unicast/Broadcast) et des ACKs.
  */
 
-
 #include "diffusion.h"
 #include "cJSON.h"
 #include "connexion_multi.h"
 
 
-// Le point de départ de la file d'attente
+/** * @brief Tête de la liste chaînée contenant les messages envoyés en attente d'acquittement (ACK). 
+ * Utilisée pour garantir la livraison (Reliable UDP).
+ */
 NoeudAttente *file_attente = NULL;
 
+
+/** * @brief Identifiant unique de cette instance du jeu. 
+ * Assigné par Python, il est inséré dans chaque en-tête UDP sortant (`id_expediteur`).
+ */
 static uint8_t mon_id_joueur = 0;
+
+
+/** * @brief Compteur global garantissant que chaque message envoyé possède un identifiant unique. 
+ * Incrémenté après chaque envoi.
+ */
 static uint32_t compteur_sequence = 0;
 
 
@@ -94,7 +104,15 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
     return 0;
 }
 
-// ACK et PING
+/**
+ * @brief Envoie un message système court (sans payload JSON) sur le réseau.
+ * @details Utilisée exclusivement pour la signalisation interne du protocole (ACK, PING).
+ * L'enveloppe UDP générée indique une taille de payload de 0.
+ * * @param mon_socket_udp Le descripteur du socket UDP local utilisé pour l'envoi.
+ * @param type_msg Le type de message réseau (ex: 1 pour ACK, 2 pour Ping).
+ * @param num_seq Le numéro de séquence auquel ce message fait référence (vital pour valider un ACK).
+ * @param dest L'adresse IP et le port du destinataire.
+ */
 void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest) {
     EnteteUDP enveloppe;
     enveloppe.taille_payload = htons(0); 
@@ -279,9 +297,19 @@ char *diffusion_message_sens2(int reseau_fd){
     }
 }
 
+
+/**
+ * @brief Vérifie les messages en attente et retransmet ceux qui n'ont pas reçu d'ACK.
+ * @details Parcourt la liste chaînée `file_attente`. Si le temps écoulé depuis le dernier 
+ * envoi d'un message dépasse le délai de tolérance (fixé à 300 ms), le paquet UDP complet 
+ * (en-tête + JSON) est reconstruit et renvoyé au destinataire. Le compteur de temps du 
+ * message est alors réinitialisé. C'est le moteur principal de la fiabilité réseau.
+ *
+ * @param mon_socket_udp Le descripteur du socket UDP local utilisé pour renvoyer les paquets.
+ */
 void verifier_retransmissions(int mon_socket_udp) {
     long maintenant = get_time();
-    long DELAI_RETRANSMISSION = 300;
+    long DELAI_RETRANSMISSION = 300; // Fixer
     
     NoeudAttente *actuel = file_attente;
 
@@ -310,12 +338,28 @@ void verifier_retransmissions(int mon_socket_udp) {
     }
 }
 
+
+
+/**
+ * @brief Récupère l'heure actuelle du système avec une précision en millisecondes.
+ * @details Fonction utilitaire critique utilisée pour calculer les timeouts d'inactivité (Heartbeat)
+ * et mesurer le délai d'attente avant retransmission d'un paquet.
+ * * @return Le temps écoulé (timestamp) depuis l'époque UNIX, converti en millisecondes.
+ */
 long get_time() {
     struct timeval temps;
     gettimeofday(&temps, NULL);
     return (temps.tv_sec * 1000) + (temps.tv_usec / 1000);
 }
 
+
+/**
+ * @brief Retire un message de la file d'attente suite à la réception de son accusé de réception (ACK).
+ * @details Parcourt la liste chaînée `file_attente`. Si un nœud correspond exactement au numéro de 
+ * séquence et à l'adresse de l'expéditeur de l'ACK, il est retiré de la liste et libéré de la mémoire.
+ * * @param seq_a_supprimer Le numéro de séquence (num_sequence) confirmé par le destinataire.
+ * @param expediteur L'adresse (IP et Port) du pair qui vient de valider la réception.
+ */
 void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteur) {
     NoeudAttente *actuel = file_attente;
     NoeudAttente *precedent = NULL;
@@ -340,6 +384,13 @@ void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteu
     printf("[INFO] ACK reçu pour %u, mais message déjà supprimé ou inconnu.\n", seq_a_supprimer);
 }
 
+
+/**
+ * @brief Purge la file d'attente de tous les messages destinés à un joueur déconnecté.
+ * @details Lorsqu'un pair quitte la partie (timeout ou déconnexion volontaire), cette fonction 
+ * évite que le programme ne tente de lui retransmettre indéfiniment des messages dans le vide.
+ * * @param joueur_parti L'adresse réseau (IP et Port) du joueur banni ou déconnecté.
+ */
 void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti) {
     NoeudAttente *actuel = file_attente;
     NoeudAttente *precedent = NULL;
@@ -371,6 +422,13 @@ void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti) {
     }
 }
 
+
+/**
+ * @brief Enregistre l'identifiant local du joueur fourni par l'application Python.
+ * @details Cette fonction est appelée via IPC au démarrage du jeu. L'ID stocké sera 
+ * utilisé comme signature (id_expediteur) pour tous les paquets UDP générés par la suite.
+ * * @param id L'identifiant attribué à ce client.
+ */
 void set_mon_id(uint8_t id) {
     mon_id_joueur = id;
 }
