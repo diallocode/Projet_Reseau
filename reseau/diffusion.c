@@ -37,6 +37,19 @@ static uint32_t compteur_sequence = 0;
  */
 int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg){
 
+    // Si le processus réseau n'a pas encore son ID, il le vole dans le JSON (Le fait de faire des pings des le debut donne les mauvais ids avant le debut du processus python)
+    if (mon_id_joueur == 0) {
+        cJSON *json_obj = cJSON_Parse(donnee_json);
+        if (json_obj != NULL) {
+            cJSON *pid_item = cJSON_GetObjectItemCaseSensitive(json_obj, "player_id");
+            if (cJSON_IsNumber(pid_item)) {
+                mon_id_joueur = pid_item->valueint;
+                printf("[CORRECTION SYSTÈME] Mon ID réseau mis à jour dynamiquement : %u\n", mon_id_joueur);
+            }
+            cJSON_Delete(json_obj);
+        }
+    }
+
     EnteteUDP enveloppe;        
     enveloppe.taille_payload = htons((uint16_t)strlen(donnee_json));
     enveloppe.type_message = type_msg;
@@ -73,7 +86,9 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
 
         // On verifie si on doit envoyer a ce joueur
         if(cible_id == -1 || players[i].id == cible_id){
-            // --- AJOUT DES LOGS DE PREUVE ---
+
+
+            // --- Test d'affichage pour s'assurer le bon fonctionnement du routage reseau ---
             if (cible_id == -1) {
                 printf("[ROUTAGE] BROADCAST : Envoi à tout le monde -> IP: %s (ID: %u)\n", 
                        inet_ntoa(players[i].addr.sin_addr), players[i].id);
@@ -170,6 +185,8 @@ char *diffusion_message_sens2(int reseau_fd){
    
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
     uint32_t vrai_id_expediteur = ntohl(enveloppe_recue->id_expediteur);
+
+    printf("[DEBUG RÉSEAU] Paquet reçu ! ID brut décodé : %u\n", vrai_id_expediteur);
 
     // Verification pour l'id interne
     if (vrai_id_expediteur == mon_id_joueur) {
