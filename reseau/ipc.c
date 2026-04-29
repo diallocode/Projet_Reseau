@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include "socket_compat.h"
 
+#include "socket_compat.h"
+#ifndef _WIN32
+    #include <sys/socket.h>
+    #include <sys/select.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+#endif
 #include "cJSON.h"
 #include "diffusion.h"
 #include "connexion_multi.h"
