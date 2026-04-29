@@ -92,7 +92,7 @@ void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, str
     enveloppe.num_sequence = htonl(num_seq);
 
     //  On envoie DIRECTEMENT la structure, sans malloc, sans Buffer !
-    if(sendto(mon_socket_udp, &enveloppe, sizeof(EnteteUDP), 0, (struct sockaddr*)&dest, sizeof(struct sockaddr_in)) < 0) {
+    if(sendto(mon_socket_udp, (const char*)&enveloppe, sizeof(EnteteUDP), 0, (struct sockaddr*)&dest, sizeof(struct sockaddr_in)) < 0) {
         printf("[ERREUR] Impossible d'envoyer le message système (Type %d)\n", type_msg);
     } else {
         printf("[RÉSEAU] Message système (Type %d) envoyé avec succès.\n", type_msg);
@@ -242,10 +242,16 @@ void verifier_retransmissions(int mon_socket_udp) {
 
 
 // Fonction utilitaire pour avoir le temps en millisecondes
+//fonction mise a jour pour assurer la portabilité 
 long get_time() {
-    struct timeval temps;
-    gettimeofday(&temps, NULL);
-    return (temps.tv_sec * 1000) + (temps.tv_usec / 1000);
+    #ifdef _WIN32
+    // Alternative Windows pour les millisecondes
+        return (long)GetTickCount(); 
+    #else
+        struct timeval temps;
+        gettimeofday(&temps, NULL);
+        return (temps.tv_sec * 1000) + (temps.tv_usec / 1000);
+    #endif
 }
 
 

@@ -1,10 +1,7 @@
+#include "socket_compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include "socket_compat.h"
-
 #include "cJSON.h"
 #include "diffusion.h"
 #include "connexion_multi.h"
@@ -56,15 +53,22 @@ int main(int argc, char *argv[]) {
         network_cleanup();
         exit(1);
 }
-
+    //ajout de reuse pour eviter les conflits de ports 
+    int opt = 1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_addr.s_addr =htonl(INADDR_ANY);
     addr.sin_port = htons(port_python_recv);
 
     if (bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+       #ifdef _WIN32
+        printf("Erreur bind Windows : %d\n", WSAGetLastError());
+    #else
         perror("Erreur bind");
+    #endif
+        network_cleanup(); // Important pour libérer les ressources
         exit(1);
     }
 
@@ -82,6 +86,8 @@ int main(int argc, char *argv[]) {
         network_cleanup();
         exit(1);
 }
+    //idem pour le socket réseau 
+    setsockopt(reseau_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
     struct sockaddr_in reseau_addr;
     memset(&reseau_addr, 0, sizeof(reseau_addr));
     reseau_addr.sin_family = AF_INET;

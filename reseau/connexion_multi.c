@@ -42,29 +42,51 @@ struct paire* get_connected_peers(int *count) {
 // La fonction pour afficher les IP (extraite de son main)
 
 //on la protege selon qu'il soit compilé sur Windows ou Linux pour eviter les erreurs de compilation sur Windows
+void afficher_mes_ips() {
+    printf("--- MES ADRESSES IP POUR JOUER ---\n");
+
 #ifndef _WIN32
-void afficher_mes_ips() {
-   struct ifaddrs *ifaddrp, *ifad;
-   char *addr;
-   getifaddrs(&ifaddrp);
-   printf("--- MES ADRESSES IP POUR JOUER ---\n");
-   for(ifad = ifaddrp; ifad != NULL; ifad = ifad->ifa_next){
-       if(ifad->ifa_addr && ifad->ifa_addr->sa_family == AF_INET){
-           addr = inet_ntoa(((struct sockaddr_in *)ifad->ifa_addr)->sin_addr);
-           if(strcmp(addr,"127.0.0.1") != 0){      
-               printf("-> %s\n", addr);
-           }
-       }
-   }
-   printf("----------------------------------\n");
-   freeifaddrs(ifaddrp);
-}
+    // --- Code pour Linux (Debian) ---
+    struct ifaddrs *ifaddrp, *ifad;
+    char *addr;
+    if (getifaddrs(&ifaddrp) == -1) return;
+
+    for(ifad = ifaddrp; ifad != NULL; ifad = ifad->ifa_next){
+        if(ifad->ifa_addr && ifad->ifa_addr->sa_family == AF_INET){
+            addr = inet_ntoa(((struct sockaddr_in *)ifad->ifa_addr)->sin_addr);
+            if(strcmp(addr,"127.0.0.1") != 0){      
+                printf("-> %s\n", addr);
+            }
+        }
+    }
+    freeifaddrs(ifaddrp);
 #else
-void afficher_mes_ips() {
-    printf("Affichage des IPs non supporté sur Windows pour le moment.\n");
-}
+    // --- Code pour Windows (Ton HP) ---
+    char szHostName[255];
+    // On récupère le nom de la machine
+    if (gethostname(szHostName, 255) == 0) {
+        struct hostent *host_entry;
+        // On cherche les adresses liées à ce nom
+        host_entry = gethostbyname(szHostName);
+        if (host_entry != NULL) {
+            int i = 0;
+            // On parcourt la liste des adresses trouvées
+            while (host_entry->h_addr_list[i] != NULL) {
+                struct in_addr addr;
+                memcpy(&addr, host_entry->h_addr_list[i], sizeof(struct in_addr));
+                char *ip = inet_ntoa(addr);
+                // On n'affiche pas l'adresse de boucle locale
+                if (strcmp(ip, "127.0.0.1") != 0) {
+                    printf("-> %s (Windows)\n", ip);
+                }
+                i++;
+            }
+        }
+    }
 #endif
 
+    printf("----------------------------------\n");
+}
 
 int close_socket(SOCKET_T sockfd) { // on Change int par SOCKET_T pour gerer les tailles de socket sur les deux OS
      CLOSE_SOCKET(sockfd); // Utilise la macro pour garantir la compatibilité

@@ -20,6 +20,7 @@
     #include <unistd.h>
     #include <errno.h>
     #include <netdb.h>
+    #include <time.h>
     // Sous Unix, un socket est juste un entier (int)
     typedef int SOCKET_T;
     #define INVALID_SOCKET_T -1

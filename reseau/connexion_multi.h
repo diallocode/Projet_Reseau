@@ -2,7 +2,6 @@
 #define CONNEXION_MULTI_H
 
 #include "socket_compat.h"
-#include <netinet/in.h> // Requis pour la structure sockaddr_in
 #include <time.h> 
 #include <stdint.h>  
 
