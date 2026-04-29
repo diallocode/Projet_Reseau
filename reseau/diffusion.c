@@ -17,7 +17,7 @@ NoeudAttente *file_attente = NULL;
 /** * @brief Identifiant unique de cette instance du jeu. 
  * Assigné par Python, il est inséré dans chaque en-tête UDP sortant (`id_expediteur`).
  */
-static uint8_t mon_id_joueur = 0;
+static uint32_t mon_id_joueur = 0;
 
 
 /** * @brief Compteur global garantissant que chaque message envoyé possède un identifiant unique. 
@@ -40,7 +40,7 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
     EnteteUDP enveloppe;        
     enveloppe.taille_payload = htons((uint16_t)strlen(donnee_json));
     enveloppe.type_message = type_msg;
-    enveloppe.id_expediteur = mon_id_joueur;
+    enveloppe.id_expediteur = htonl(mon_id_joueur);
     enveloppe.num_sequence = htonl(compteur_sequence);
     compteur_sequence++;
 
@@ -117,7 +117,7 @@ void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, str
     EnteteUDP enveloppe;
     enveloppe.taille_payload = htons(0); 
     enveloppe.type_message = type_msg;
-    enveloppe.id_expediteur = mon_id_joueur;
+    enveloppe.id_expediteur = htonl(mon_id_joueur);
     enveloppe.num_sequence = htonl(num_seq);
 
     if(sendto(mon_socket_udp, &enveloppe, sizeof(EnteteUDP), 0,
@@ -159,16 +159,17 @@ char *diffusion_message_sens2(int reseau_fd){
     add_peer_if_new(addr_distant);
    
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
+    uint32_t vrai_id_expediteur = ntohl(enveloppe_recue->id_expediteur);
 
     // Verification pour l'id interne
-    if (enveloppe_recue->id_expediteur == mon_id_joueur) {
+    if (vrai_id_expediteur == mon_id_joueur) {
         printf("[ALERTE] COLLISION D'ID ! Un paquet reçu (IP: %s) tente d'utiliser mon identifiant local (%d). Paquet détruit.\n", 
                inet_ntoa(addr_distant.sin_addr), mon_id_joueur);
         free(Buffer);
         return NULL; // On jette le paquet avant même qu'il ne pollue le système
     }
 
-    actualiser_activite(addr_distant, enveloppe_recue->id_expediteur);
+    actualiser_activite(addr_distant, vrai_id_expediteur);
 
     uint32_t seq_recu = ntohl(enveloppe_recue->num_sequence);
     uint16_t taille_json = ntohs(enveloppe_recue->taille_payload);
@@ -438,6 +439,6 @@ void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti) {
  * utilisé comme signature (id_expediteur) pour tous les paquets UDP générés par la suite.
  * * @param id L'identifiant attribué à ce client.
  */
-void set_mon_id(uint8_t id) {
+void set_mon_id(uint32_t id) {
     mon_id_joueur = id;
 }
