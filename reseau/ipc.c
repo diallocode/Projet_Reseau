@@ -1,3 +1,9 @@
+/**
+ * @file ipc.c
+ * @brief Gestion de la communication inter-processus via sockets Unix.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

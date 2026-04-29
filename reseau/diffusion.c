@@ -1,6 +1,13 @@
+/**
+ * @file diffusion.c
+ * @brief Implémentation du routage P2P (Unicast/Broadcast) et des ACKs.
+ */
+
+
 #include "diffusion.h"
 #include "cJSON.h"
 #include "connexion_multi.h"
+
 
 // Le point de départ de la file d'attente
 NoeudAttente *file_attente = NULL;
@@ -8,7 +15,16 @@ NoeudAttente *file_attente = NULL;
 static uint8_t mon_id_joueur = 0;
 static uint32_t compteur_sequence = 0;
 
-// Python->Reseau
+
+
+/**
+ * @brief Envoie un message JSON au réseau (vers un ou tous les joueurs).
+ * @details Analyse le JSON pour trouver "network_owner" afin de router le message de manière ciblée.
+ * @param donnee_json Chaîne JSON fournie par Python.
+ * @param mon_socket_udp Socket UDP ouvert.
+ * @param type_msg Type du message (update, Handshake, etc.).
+ * @return 0 en cas de succès, -1 sinon.
+ */
 int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg){
 
     EnteteUDP enveloppe;        
@@ -94,7 +110,15 @@ void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, str
     }
 }
 
-// Reseau->Python
+
+
+
+/**
+ * @brief Réceptionne et traite les messages entrants du réseau.
+ * @details Gère les cas système (ACK, Ping, liste des pairs) et transmet les données de jeu à Python.
+ * @param reseau_fd Descripteur du socket UDP.
+ * @return Le payload JSON si destiné à Python, NULL sinon.
+ */
 char *diffusion_message_sens2(int reseau_fd){
     struct sockaddr_in addr_distant;
     socklen_t addr_len = sizeof(addr_distant);      
@@ -124,10 +148,10 @@ char *diffusion_message_sens2(int reseau_fd){
 
     switch (enveloppe_recue->type_message)
     {
-        case 3: /* demande_pairs — un nouveau joueur demande la liste des pairs */
+        case 3: /* un nouveau joueur arrivant qui demande la liste des pairs */
             printf("[P2P] Demande de liste reçue de %s\n", inet_ntoa(addr_distant.sin_addr));
 
-            // 1. Construire la liste des pairs connus
+            // Construction de la liste des pairs connus
             int nb = 0;
             struct paire *pairs = get_connected_peers(&nb);
 
@@ -136,7 +160,7 @@ char *diffusion_message_sens2(int reseau_fd){
             cJSON *liste = cJSON_CreateArray();
 
             for (int i = 0; i < nb; i++) {
-                // Ne pas inclure l'expéditeur dans la liste
+                // On exclu l'expéditeur de la liste
                 if (pairs[i].addr.sin_addr.s_addr == addr_distant.sin_addr.s_addr) continue;
                 cJSON *pair_obj = cJSON_CreateObject();
                 cJSON_AddStringToObject(pair_obj, "ip", inet_ntoa(pairs[i].addr.sin_addr));
@@ -146,7 +170,7 @@ char *diffusion_message_sens2(int reseau_fd){
             char *json_liste = cJSON_PrintUnformatted(reponse_json);
             cJSON_Delete(reponse_json);
 
-            // 2. Envoyer la liste au nouveau joueur
+            // Envoi de la liste au nouveau joueur
             EnteteUDP env_liste;
             memset(&env_liste, 0, sizeof(env_liste));
             env_liste.taille_payload = htons(strlen(json_liste));
@@ -166,7 +190,7 @@ char *diffusion_message_sens2(int reseau_fd){
             }
             free(json_liste);
 
-            // 3. Informer les autres pairs de l'arrivée du nouveau joueur
+            // Informer les autres pairs de l'arrivée du nouveau joueur
             char json_nouveau[256];
             sprintf(json_nouveau, "{\"type\":\"nouveau_pair\",\"ip\":\"%s\"}",
                     inet_ntoa(addr_distant.sin_addr));
@@ -198,7 +222,7 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
-        case 4: /* liste_pairs — reçu par le nouveau joueur */
+        case 4: /* liste_pairs reçu par le nouveau joueur */
             printf("[P2P] Liste des pairs reçue !\n");
             {
                 char *json_liste_recu = malloc(taille_json + 1);
@@ -237,7 +261,7 @@ char *diffusion_message_sens2(int reseau_fd){
             free(Buffer);
             return NULL;
 
-        case 6: /* nouveau_pair — reçu par les pairs existants */
+        case 6: /* nouveau_pair reçu par les pairs existants */
             printf("[P2P] Nouveau pair signalé !\n");
             {
                 char *json_nouveau_recu = malloc(taille_json + 1);
