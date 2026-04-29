@@ -4,11 +4,7 @@
 int network_init() {
 #ifdef _WIN32
     WSADATA wsaData;
-    int res = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (res != 0) {
-        printf("Échec de l'initialisation de Winsock : %d\n", res);
-        return -1;
-    }
+    return WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
     return 0;
 }

@@ -54,3 +54,11 @@ python3 Main.py plot <AI> <PLOTTER> <SCENARIO> "[UnitType,...]" "<RangeExpressio
 python3 Main.py plot Daft PlotLanchester Lanchester "[Knight, Pikeman]" "range(1,100)"
 
 ```
+### guide d'usage programme multiplatforme 
+gcc ipc.c diffusion.c connexion_multi.c cJSON.c -o IPC.exe -I. -lws2_32 -std=c99
+### sous linux faire 
+gcc ipc.c diffusion.c connexion_multi.c cJSON.c -o IPC -I. -std=c99
+### on tourne sur les memes ports 
+./IPC.exe 
+### run sous linux  faudra ip et port 
+./IPC apres donner le numéro de port 

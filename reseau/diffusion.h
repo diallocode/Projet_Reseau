@@ -1,70 +1,36 @@
-/**
- * @file diffusion.h
- * @brief Structures du protocole UDP et gestion de la fiabilité.
- */
+#ifndef DIFFUSION_H
+#define DIFFUSION_H
 
-
-#ifndef DIFFUSION__h
-#define DIFFUSION__h
-
+#include "socket_compat.h" // On utilise notre traducteur universel
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
-
-// Cette directive magique empêche le compilateur C de rajouter des octets 
-// vides (padding) au milieu de la structure. 
+// Structure de l'entête UDP (Format fixe pour tous les OS)
 #pragma pack(push, 1)
-
-
-
-/**
- * @struct EnteteUDP
- * @brief En-tête personnalisé pour les paquets réseau du jeu.
- */
-typedef struct
-{
-    uint32_t id_expediteur;     /**< ID du joueur émetteur. */
-    uint8_t type_message;       /**< Type : 0:Jeu, 1:ACK, 2:Ping, etc.. */
-    uint32_t num_sequence;      /**< ID du paquet pour acquittement (htonl). */
-    uint16_t taille_payload;    /**< Taille du JSON (htons). */
+typedef struct {
+    uint16_t taille_payload;
+    uint8_t  type_message;
+    uint32_t id_expediteur;
+    uint32_t num_sequence;
 } EnteteUDP;
-
-
 #pragma pack(pop)
 
-
-
-/**
- * @struct NoeudAttente
- * @brief Élément d'une liste chaînée pour la retransmission des messages.
- */
+// Structure pour la file d'attente des ACKs
 typedef struct NoeudAttente {
-    EnteteUDP entete;                /**< Copie de l'en-tête envoyé. */
-    struct sockaddr_in dest;         /**< Destination du message. */
-    char payload[10049];             /**< Copie du contenu JSON. */
-    long temps_envoi;                /**< Heure du dernier envoi (ms). */
-    struct NoeudAttente *suivant;    /**< Pointeur vers le message suivant. */
+    EnteteUDP entete;
+    char payload[12288];
+    long temps_envoi;
+    struct sockaddr_in dest;
+    struct NoeudAttente *suivant;
 } NoeudAttente;
 
-
-// Prototypes
-extern int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t type_msg);
-extern char *diffusion_message_sens2(int reseau_fd);
-extern void verifier_retransmissions(int mon_socket_udp);
-extern long get_time();
-extern void supprimer_de_la_file(uint32_t seq_a_supprimer, struct sockaddr_in expediteur);
-extern void message_systeme(int mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest);
-extern void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti);
-extern void set_mon_id(uint32_t id);
-
+// Prototypes portables (utilisent SOCKET_T)
+int diffusion_message_sens1(const char *donnee_json, SOCKET_T mon_socket_udp, uint8_t type_msg);
+char* diffusion_message_sens2(SOCKET_T reseau_fd);
+void verifier_retransmissions(SOCKET_T mon_socket_udp);
+void message_systeme(SOCKET_T mon_socket_udp, uint8_t type_msg, uint32_t num_seq, struct sockaddr_in dest);
+void supprimer_de_la_file(uint32_t seq, struct sockaddr_in expediteur);
+void nettoyer_file_joueur_parti(struct sockaddr_in joueur_parti);
+long get_time();
+void set_mon_id(uint32_t id);
 
 #endif

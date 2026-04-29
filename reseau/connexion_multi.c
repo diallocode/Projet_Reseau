@@ -2,7 +2,7 @@
 #include "connexion_multi.h"
 #include <stdio.h>
 #include <string.h>
-#include <time.h> 
+
 
 #ifndef _WIN32
     #include <ifaddrs.h> 
@@ -73,7 +73,7 @@ void afficher_mes_ips() {
     printf("----------------------------------\n");
 }
 
-int close_socket(SOCKET_T sockfd) {
+int  close_socket(SOCKET_T sockfd) {
      return CLOSE_SOCKET(sockfd);
 }
 

@@ -6,16 +6,8 @@
 
 #ifndef CONNEXION_MULTI_H
 #define CONNEXION_MULTI_H
-
-#include <netinet/in.h>
-#include <time.h> 
-#include <stdint.h>  
-#include <stdio.h>
-#include <string.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include "diffusion.h"
+#include "socket_compat.h"
+#include <time.h>
 
 /**
  * @struct paire
@@ -32,6 +24,8 @@ struct paire {
 // =========================
 // PROTOTYPES DES FONCTIONS 
 // =========================
+
+SOCKET_T initialiser_ma_connexion();
 
 /* * Ajoute une nouvelle adresse au carnet si elle n'y est pas déjà.
  * Pour le P2P : appelé à chaque fois qu'on reçoit un paquet inconnu.
@@ -53,7 +47,7 @@ void afficher_mes_ips();
 
 
 //fonction pour fermer la connexion 
-int close_socket(int sockfd);
+int close_socket(SOCKET_T sockfd);
 
 // Suppression d'un participant de la liste des pairs actifs
 int remove_peer(int index);
