@@ -159,6 +159,15 @@ char *diffusion_message_sens2(int reseau_fd){
     add_peer_if_new(addr_distant);
    
     EnteteUDP *enveloppe_recue = (EnteteUDP *)Buffer;
+
+    // Verification pour l'id interne
+    if (enveloppe_recue->id_expediteur == mon_id_joueur) {
+        printf("[ALERTE] COLLISION D'ID ! Un paquet reçu (IP: %s) tente d'utiliser mon identifiant local (%d). Paquet détruit.\n", 
+               inet_ntoa(addr_distant.sin_addr), mon_id_joueur);
+        free(Buffer);
+        return NULL; // On jette le paquet avant même qu'il ne pollue le système
+    }
+
     actualiser_activite(addr_distant, enveloppe_recue->id_expediteur);
 
     uint32_t seq_recu = ntohl(enveloppe_recue->num_sequence);
