@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
         memset(&addr_pair, 0, sizeof(addr_pair));
         addr_pair.sin_family = AF_INET;
         addr_pair.sin_addr.s_addr = inet_addr(ip_pair);
-        addr_pair.sin_port = htons(5002);
+        addr_pair.sin_port = htons(10502);
 
         add_peer_if_new(addr_pair);
         printf("[INFO] Pair %s:5002 ajouté au carnet.\n", ip_pair);
