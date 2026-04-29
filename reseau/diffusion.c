@@ -1,6 +1,13 @@
 #include "diffusion.h"
 #include "cJSON.h"
 #include "connexion_multi.h"
+// --- AJOUTE CE BLOC ICI ---
+#ifdef _WIN32
+    #include <windows.h> // Pour GetTickCount()
+#else
+    #include <sys/time.h> // Pour gettimeofday() sur Debian
+#endif
+// --------
 
 
 /*static int ids_deja_pris[10] = {0}; // Tableau rempli de 0
