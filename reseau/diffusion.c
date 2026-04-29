@@ -21,6 +21,18 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
     int nombre_de_joueurs = 0;
     struct paire *players = get_connected_peers(&nombre_de_joueurs);
 
+    // On trouve l'id du destinateur
+    int cible_id = -1;
+    cJSON *json_obj = cJSON_Parse(donnee_json);
+    if (json_obj != NULL) {
+        cJSON *dest_item = cJSON_GetObjectItemCaseSensitive(json_obj, "network_owner"); 
+        
+        if (cJSON_IsNumber(dest_item)) {
+            cible_id = dest_item->valueint; 
+        }
+        cJSON_Delete(json_obj); 
+    }
+
     int TAILLE_PAQUET = strlen(donnee_json) + sizeof(EnteteUDP); 
     char *Buffer = malloc(TAILLE_PAQUET);
     if(Buffer == NULL){
@@ -32,24 +44,33 @@ int diffusion_message_sens1(const char *donnee_json, int mon_socket_udp, uint8_t
     memcpy(Buffer + sizeof(EnteteUDP), donnee_json, strlen(donnee_json));
 
     for (int i = 0; i < nombre_de_joueurs; i++) {
-        struct sockaddr_in dest_addr = players[i].addr;
 
-        if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, 0,
-                  (struct sockaddr*)&dest_addr, sizeof(struct sockaddr_in)) < 0){
-            printf("erreur-sendto");
-        }
+        // On verifie si on doit envoyer a ce joueur
+        if(cible_id == -1 || players[i].id == cible_id){
+            struct sockaddr_in dest_addr = players[i].addr;
 
-        if (type_msg != 5){
-            NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
-            if (nouveau_colis != NULL) {
-                nouveau_colis->entete = enveloppe;
-                strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);
-                nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
-                nouveau_colis->temps_envoi = get_time();
-                nouveau_colis->dest = dest_addr; 
-                nouveau_colis->suivant = file_attente;
-                file_attente = nouveau_colis;
+            if(sendto(mon_socket_udp, Buffer, TAILLE_PAQUET, 0,
+                    (struct sockaddr*)&dest_addr, sizeof(struct sockaddr_in)) < 0){
+                printf("erreur-sendto");
             }
+
+            if (type_msg != 5){
+                NoeudAttente *nouveau_colis = (NoeudAttente*)malloc(sizeof(NoeudAttente));
+                if (nouveau_colis != NULL) {
+                    nouveau_colis->entete = enveloppe;
+                    strncpy(nouveau_colis->payload, donnee_json, sizeof(nouveau_colis->payload) - 1);
+                    nouveau_colis->payload[sizeof(nouveau_colis->payload) - 1] = '\0';
+                    nouveau_colis->temps_envoi = get_time();
+                    nouveau_colis->dest = dest_addr; 
+                    nouveau_colis->suivant = file_attente;
+                    file_attente = nouveau_colis;
+                }
+            }
+            // C'est un message cible et on a trouve la cible, on s'arrete
+            if(cible_id != -1){
+                break;
+            }
+
         }
     }
 
@@ -191,7 +212,7 @@ char *diffusion_message_sens2(int reseau_fd){
         case 5:
         case 0: /* MOVE, UPDATE, HANDSHAKE etc. */
             printf("Message Reçu\n");
-            usleep(5000);
+            usleep(500000);       // gestion de l'incoherence
 
             message_systeme(reseau_fd, 1, seq_recu, addr_distant);
 
