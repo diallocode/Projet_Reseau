@@ -61,3 +61,4 @@ gcc ipc.c diffusion.c connexion_multi.c cJSON.c -o IPC -I. -std=c99
 ### on tourne sur les memes ports 
 ./IPC.exe 
 ### run sous linux  faudra ip et port 
+./IPC apres donner le numéro de port 

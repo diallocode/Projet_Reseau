@@ -15,7 +15,7 @@ int nb_joueur_connecte = 0;
 void add_peer_if_new(struct sockaddr_in new_peer_addr) {
     printf("[DEBUG] Tentative ajout pair : %s:%d\n",
     inet_ntoa(new_peer_addr.sin_addr),
-    ntohs(new_peer_addr.sin_port));  // ← ce port est-il bien 5002 ?
+    ntohs(new_peer_addr.sin_port));  // 
 
 
    for (int i = 0; i < nb_joueur_connecte; i++) {
