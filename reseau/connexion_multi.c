@@ -186,3 +186,40 @@ void afficher_liste_joueurs() {
     }
     printf("==========================================\n\n");
 }
+
+// Ajoute cette fonction dans connexion_multi.c
+SOCKET_T initialiser_ma_connexion() {
+    SOCKET_T sock;
+    struct sockaddr_in mon_addr;
+
+    // 1. Création du socket UDP
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock == INVALID_SOCKET) {
+        perror("Erreur création socket");
+        return INVALID_SOCKET;
+    }
+
+    // 2. Préparation de l'adresse (Port 0 = Dynamique)
+    memset(&mon_addr, 0, sizeof(mon_addr));
+    mon_addr.sin_family = AF_INET;
+    mon_addr.sin_addr.s_addr = INADDR_ANY; 
+    mon_addr.sin_port = htons(0); // <--- LE SECRET EST ICI
+
+    // 3. Liaison (Bind)
+    if (bind(sock, (struct sockaddr *)&mon_addr, sizeof(mon_addr)) < 0) {
+        perror("Erreur bind");
+        CLOSE_SOCKET(sock);
+        return INVALID_SOCKET;
+    }
+
+    // 4. Récupération du port attribué pour l'afficher
+    struct sockaddr_in adr_reelle;
+    socklen_t len = sizeof(adr_reelle);
+    getsockname(sock, (struct sockaddr *)&adr_reelle, &len);
+
+    printf("\n[SUCCÈS] Connexion prête !");
+    printf("\n[INFO] Ton port de jeu actuel est : %d", ntohs(adr_reelle.sin_port));
+    printf("\n[INFO] Donne ce numéro à ton ami pour qu'il puisse te rejoindre.\n\n");
+
+    return sock;
+}
