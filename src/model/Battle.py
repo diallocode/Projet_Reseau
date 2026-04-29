@@ -76,6 +76,8 @@ class Battle:
                         self.battlefield._handle_property_answer(msg)
                     elif msg["type"] == "property_request":
                         self.battlefield._handle_property_request(msg, self.general)
+                        #afficher les propriéteés de l'unité demandée
+                        print(f"Property request reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
                         
                     else:
                         print(f"Message inconnu reçu : {msg}")
