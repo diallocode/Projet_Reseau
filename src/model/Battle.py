@@ -73,7 +73,7 @@ class Battle:
                         print(f"Acknowledgment reçu pour le message")
                         self.battlefield._handle_acknowledgment(msg)
                     elif msg["type"] == "property_answer":
-                        self.battlefield._handle_property_answer(msg)
+                        self.battlefield._handle_property_answer(msg, self.general)
                     elif msg["type"] == "property_request":
                         self.battlefield._handle_property_request(msg, self.general)
                         
