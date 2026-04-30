@@ -62,23 +62,27 @@ class Battle:
                     dt = clock.tick(FPS * self.speed) / 1000  # Speed up in headless mode    
                 for msg in self.network_manager.get_messages():
                     if msg["type"] == "handshake":
-                        print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
-                        self.battlefield._handle_new_player(msg, self.general)
+                        #print(f"Handshake reçu pour le player {msg['player_id']} avec {len(msg['units'])} unités")
+                        self.battlefield._handle_new_player(msg, self.general, False)
                     elif msg["type"] == "update":
-                        print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
+                        #print(f"Update reçu pour l'unité {msg['id']} du player {msg['network_owner']}")
+                        #print(f"Msg content: {msg}")
                         self.battlefield._handle_unit_update(msg)
                     elif msg["type"] == "disconnect":
                         self.battlefield._handle_disconnect(msg)
                     elif msg["type"] == "acknowledgment":
-                        print(f"Acknowledgment reçu pour le message")
-                        self.battlefield._handle_acknowledgment(msg)
+                        #print(f"Acknowledgment reçu pour le message")
+                        self.battlefield._handle_new_player(msg, self.general, True)
                     elif msg["type"] == "property_answer":
+                        print(f"Property answer reçu ")
                         self.battlefield._handle_property_answer(msg, self.general)
+
                     elif msg["type"] == "property_request":
+                        #afficher les propriéteés de l'unité demandée
+                        print(f"Property request reçu ")
                         self.battlefield._handle_property_request(msg, self.general)
                     elif msg["type"] == "alliance":
                         print(f"Alliance entre {msg['player_id']} et {msg['ally_id']}")
-                        print(f"Msg content: {msg}")
                         self.battlefield._handle_alliance(msg)
                         
                     else:
@@ -92,6 +96,8 @@ class Battle:
                     if self.view:
                         self.view.update()
             else:
+                print("Envoi du message de handshake initial...")
+                print(f"Network data: {network_data}")
                 self.network_manager.send_to_c(network_data)
                 start = True
         if self.view:

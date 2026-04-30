@@ -1,26 +1,42 @@
+/**
+ * @file connexion_multi.c
+ * @brief Implémentation de la gestion des pairs et du suivi d'activité.
+ */
+
 #include "connexion_multi.h"
-#include <stdio.h>
-#include <string.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 
 #define NB_JOUEUR_MAX 5
 
+/**
+ * @brief Tableau stockant la liste des pairs actuellement connus et connectés.
+ * * Ce carnet d'adresses local permet de gérer jusqu'à 10 joueurs. Chaque entrée
+ * contient l'adresse réseau, l'identifiant unique et le timestamp du dernier contact.
+ */
 struct paire paire_connected[NB_JOUEUR_MAX];
+
+/**
+ * @brief Nombre actuel de joueurs enregistrés dans le tableau paire_connected.
+ * * Cette variable sert d'indice pour les boucles de parcours et de limite pour 
+ * l'ajout de nouveaux joueurs.
+ */
 int nb_joueur_connecte = 0;
 
-//  La fonction pour ajouter un contact
+
+
+/**
+ * @brief Ajoute un nouveau pair à la liste s'il n'existe pas déjà.
+ * @param addr L'adresse réseau du pair à ajouter.
+ */
 void add_peer_if_new(struct sockaddr_in new_peer_addr) {
     printf("[DEBUG] Tentative ajout pair : %s:%d\n",
     inet_ntoa(new_peer_addr.sin_addr),
-    ntohs(new_peer_addr.sin_port));  // ← ce port est-il bien 5002 ?
+    ntohs(new_peer_addr.sin_port)); 
 
 
    for (int i = 0; i < nb_joueur_connecte; i++) {
        if (paire_connected[i].addr.sin_addr.s_addr == new_peer_addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == new_peer_addr.sin_port) {
-           return; // Déjà connu !
+           return; 
        }
    }
    if (nb_joueur_connecte < NB_JOUEUR_MAX) {
@@ -32,13 +48,20 @@ void add_peer_if_new(struct sockaddr_in new_peer_addr) {
    }
 }
 
-// La fonction pour lire le carnet
+
+/**
+ * @brief Récupère la liste des pairs actuellement connectés.
+ * @param count Pointeur vers un entier qui recevra le nombre de pairs.
+ * @return Un pointeur vers le tableau de structures paire.
+ */
 struct paire* get_connected_peers(int *count) {
    *count = nb_joueur_connecte;
    return paire_connected;
 }
 
-// La fonction pour afficher les IP (extraite de son main)
+/**
+ * @brief Affiche l'IP du joueur actuel
+ */
 void afficher_mes_ips() {
    struct ifaddrs *ifaddrp, *ifad;
    char *addr;
@@ -56,13 +79,17 @@ void afficher_mes_ips() {
    freeifaddrs(ifaddrp);
 }
 
-
+/**
+ * @brief Fermet un socket
+ */
 int close_socket(int sockfd) {
      close(sockfd);
      return 0;
 }
 
-
+/**
+ * @brief Supprime les joueurs n'ayant pas envoyé de signal depuis plus de 10 secondes.
+ */
 int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out) {
     time_t now = time(NULL);
     for (int i = 0; i < nb_joueur_connecte; i++) {
@@ -73,11 +100,13 @@ int check_and_get_inactive_paire(int timeout_sec, struct sockaddr_in *addr_out) 
             return paire_connected[i].id;
         }
     }
-    return -1; // Personne n'est inactif
+    return -1; 
 }
 
 
-//deconnexion dans le cas ou l'utilisateur appui sur quitter (on peut identifier l'utilisateur à trvaers son ip et port)
+/**
+ * @brief Deconnexion dans le cas ou l'utilisateur appui sur quitter (on peut identifier l'utilisateur à trvaers son ip et port)
+ */
 void disconnect_paire_by_addr(struct sockaddr_in addr) {
     for (int i = 0; i < nb_joueur_connecte; i++) {
         if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
@@ -89,37 +118,54 @@ void disconnect_paire_by_addr(struct sockaddr_in addr) {
     }
 }
 
-//supprimer un joueuer du carnet d'adresse
+
+/**
+ * @brief Supprimer un joueur du carnet d'adresse
+ * @param index La position du joueur dans la liste (le carnet)
+ */
 int remove_peer(int index) {
     if (index < 0 || index >= nb_joueur_connecte) return -1;
-    // 1. On sauvegarde l'ID avant qu'il ne disparaisse
+   
     int id_supprime = paire_connected[index].id;
     printf("[CARNET] Le joueur ID %d a ete supprime de la liste de diffusion.\n", id_supprime);
 
-    // Décalage pour supprimer l'élément du tableau
     for (int i = index; i < nb_joueur_connecte - 1; i++) {
         paire_connected[i] = paire_connected[i + 1];
     }
     
-    // On met à jour le nombre total de joueurs connectés
     nb_joueur_connecte--;
     
-    // NOTE : On ne touche pas aux .id des autres, ils restent intacts !
     printf("[CARNET] Joueurs restants : %d\n", nb_joueur_connecte);
     return id_supprime; // On retourne l'ID du joueur supprimé pour que tanou puisse faire son broadcast
 }
 
 
+/**
+ * @brief Met à jour le timestamp d'activité d'un joueur et vérifie son identité.
+ * @details Si l'ID est déjà utilisé par une autre adresse, le message est ignoré (protection contre l'usurpation).
+ * @param addr Adresse de l'expéditeur.
+ * @param vrai_id_joueur ID déclaré dans le paquet UDP.
+ */
 void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
     printf("[DEBUG] actualiser_activite cherche %s:%d\n",
     inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
    for (int i = 0; i < nb_joueur_connecte; i++) {
+        if (paire_connected[i].id == vrai_id_joueur) {
+            
+            // On verifie que m ce n'est PAS la même adresse IP ou le même Port qu'un autre joueur !
+            if (paire_connected[i].addr.sin_addr.s_addr != addr.sin_addr.s_addr || 
+                paire_connected[i].addr.sin_port != addr.sin_port) {
+                
+                printf("[ALERTE] USURPATION D'IDENTITÉ ! L'ID %d est déjà utilisé par un autre joueur.\n", vrai_id_joueur);
+                return; // On rejette ce paquet, on ne met pas à jour l'activité !
+            }
+        }
+
        if (paire_connected[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
            paire_connected[i].addr.sin_port == addr.sin_port) {
           
            paire_connected[i].dernier_vu = time(NULL);
-           // On met à jour le carnet avec le vrai ID de l'adversaire !
-           paire_connected[i].id = vrai_id_joueur;
+           paire_connected[i].id = vrai_id_joueur; // On met à jour le carnet avec le vrai ID de l'adversaire !
           
            return;
        }
@@ -127,7 +173,9 @@ void actualiser_activite(struct sockaddr_in addr, uint32_t vrai_id_joueur) {
 }
 
 
-
+/**
+ * @brief Affiche les Joueur participants (IPs/PORTs/IDs)
+ */
 void afficher_liste_joueurs() {
     int nb_joueurs = 0;
     
@@ -142,11 +190,8 @@ void afficher_liste_joueurs() {
         long temps_actuel = time(NULL);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            // Conversion de l'IP binaire en chaîne de caractères classique (ex: "192.168.1.10")
             char *ip = inet_ntoa(joueurs[i].addr.sin_addr);
-            // Conversion du port binaire en entier classique
             int port = ntohs(joueurs[i].addr.sin_port);
-            // Calcul du temps écoulé depuis le dernier message reçu
             int inactif_depuis = temps_actuel - joueurs[i].dernier_vu;
 
             printf(" [%d] Joueur ID : %u | IP : %s | Port : %d | Inactif depuis : %ds\n", 

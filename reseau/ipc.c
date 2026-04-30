@@ -1,3 +1,9 @@
+/**
+ * @file ipc.c
+ * @brief Gestion de la communication inter-processus via sockets Unix.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -156,6 +162,9 @@ int main(int argc, char *argv[]) {
         add_peer_if_new(addr_pair);
         printf("[INFO] Pair %s:5002 ajouté au carnet.\n", ip_pair);
 
+        // NOUVEAU : demander la liste des pairs à A
+        envoyer_demande_pairs(reseau_fd, addr_pair);
+
         // Demander la liste des pairs
         envoyer_demande_pairs(reseau_fd, addr_pair);
 
@@ -178,8 +187,6 @@ int main(int argc, char *argv[]) {
     printf("Processus C prêt !\n");
 
     long dernier_ping_envoye = get_time();
-
-    printf("Processus C prêt ! En attente du message connected de Python...\n");
 
     while(1){
         fd_set fds;
@@ -212,12 +219,11 @@ int main(int argc, char *argv[]) {
                     cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
                   
                     if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
-                        // Python nous donne son ID → on configure notre ID uniquement
+                        // Python nous donne son ID
                         cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
                         if (cJSON_IsNumber(id_item)) {
                             set_mon_id((uint32_t)id_item->valueint);
                             printf("[SYSTÈME] Mon ID configuré : %d\n", id_item->valueint);
-                            // L'alliance ne se déclenche PAS ici (trop tôt, les pairs ne sont pas encore connectés)
                         }
                     } else {
                         // Sauvegarder le handshake pour pouvoir le renvoyer aux nouveaux pairs
@@ -226,7 +232,6 @@ int main(int argc, char *argv[]) {
                             printf("[SAUVEGARDE] Handshake local sauvegardé.\n");
                         }
 
-                  
                         // DÉCLENCHEMENT DE L'ALLIANCE sur handshake
                        
                         
@@ -255,6 +260,7 @@ int main(int argc, char *argv[]) {
                                 }
                             }
                         }
+
 
                         // Diffusion normale sur le réseau
                         uint32_t type_message = obtenir_type_message(buffer);
@@ -327,7 +333,7 @@ int main(int argc, char *argv[]) {
                         free(json_propre);
                         json_propre = NULL;
 
-                    } else if (type_item != NULL && strcmp(type_item->valuestring, "alliance") == 0) {
+                        } else if (type_item != NULL && strcmp(type_item->valuestring, "alliance") == 0) {
                         printf("[ALLIANCE] Reçu → transmis à Python\n");
                         int ret_alliance = sendto(sock, json_propre, strlen(json_propre), 0,
                                                   (struct sockaddr*)&python_send_addr,
@@ -379,10 +385,8 @@ int main(int argc, char *argv[]) {
 
         // Gestion des déconnexions 
         struct sockaddr_in addr_fantome;
-
-        int id_deconnecte = check_and_get_inactive_paire(60, &addr_fantome);
+        int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
         if (id_deconnecte != -1) {
-
             printf("[ALERTE] Le joueur ID %d déconnecté pour inactivité.\n", id_deconnecte);
             disconnect_paire_by_addr(addr_fantome);
             nettoyer_file_joueur_parti(addr_fantome);

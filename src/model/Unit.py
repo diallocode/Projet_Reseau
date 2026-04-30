@@ -41,6 +41,7 @@ class Unit(ABC):
     # --- NOUVEAUX ATTRIBUTS RÉSEAU ---
     network_owner: int = 0
     network_locked: bool = False
+    lock_timestamp: float = 0.0  
 
     # ------------------------------------------------------------------
     # CORE STATUS & UTILITY
@@ -68,7 +69,10 @@ class Unit(ABC):
                 "hp": self.hp,
                 "network_owner": self.network_owner,
                 "x": self.position[0],
-                "y": self.position[1]
+                "y": self.position[1],
+                "current_order": self.current_order,
+                "target_unit_id": self.target_unit.id if self.target_unit else None,
+                "target_pos": self.target_pos
             })
         #print(f"Unit {self.id} took {damage:.1f} damage from Unit {attacker.id if attacker else 'Unknown'}, new HP: {self.hp}")
 
@@ -93,13 +97,9 @@ class Unit(ABC):
         if not self.is_alive():
             return
 
-        # Cooldown reduction
-        if self.attack_delay > 0:
-            self.attack_delay -= dt
-
         # Order execution
         if self.current_order == "move":
-            print(f"Unit {self.id} executing move order towards {self.target_pos}")
+            #print(f"Unit {self.id} executing move order towards {self.target_pos}")
             self._update_move(dt)
 
         elif self.current_order == "attack":
@@ -198,12 +198,18 @@ class Unit(ABC):
         blocker = self.battlefield.get_unit_at(new_pos)
         
         # If a blocker is found and it is not us
-        if blocker and blocker.id != self.id:
-            if blocker.is_alive() and self.is_enemy(blocker):
-                # Automatic engagement if it is an enemy
-                self.set_order("attack", target=blocker)
-            return False # We stop no matter what (ally or enemy)
+        my_owner = self.id // 1000
+        target_owner = blocker.id // 1000 if blocker else None
+        if my_owner != target_owner:
+            relationship = "enemy" 
+
+            if my_owner in self.battlefield.diplomacy and target_owner in self.battlefield.diplomacy[my_owner]:
+                relationship = self.diplomacy[my_owner][target_owner]
             
+            if relationship == "enemy":
+                if blocker and blocker.is_alive():
+                    self.set_order("attack", target=blocker)
+                return False  # Stop movement if it's an enemy (engage instead)
         self.position = new_pos
         
         if self.battlefield:
@@ -214,14 +220,17 @@ class Unit(ABC):
                 "hp": self.hp,
                 "network_owner": self.network_owner,
                 "x": self.position[0],
-                "y": self.position[1]
+                "y": self.position[1],
+                "current_order": self.current_order,
+                "target_unit": self.target_unit.id if self.target_unit else None,
+                "target_pos": self.target_pos
             })
         #print(f"[Class Unit] Unit {self.id} moved to {self.position}")
         return True
-
+    # A modifier pour prendre en compte les alliés 
     def is_enemy(self, other: "Unit") -> bool:
         """Determine if another unit belongs to the opposing team based on ID."""
-        return (self.id // 1000) != (other.id // 1000)
+        return (self.id // 1000) != (other.id // 1000) 
     # ------------------------------------------------------------------
     # ATTACKING
     # ------------------------------------------------------------------
@@ -232,10 +241,8 @@ class Unit(ABC):
             self.current_order = None
             self.target_unit = None
             return
-        # In range → attack when cooldown ready
-        if self.attack_delay <= 0:
-            self._try_attack(target)
-            self.attack_delay = self.reload_time
+        self._try_attack(target)
+        #self.attack_delay = self.reload_time
 
     def _try_attack(self, target):
         """Execute an attack roll and apply damage if the hit is successful."""

@@ -32,13 +32,13 @@ DEFAULT_SCENARIOS = [
     {"Crossbowman":0, "Pikeman":20,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":0,"Knight":20,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     
-    {"Crossbowman":20, "Pikeman":20,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
+    {"Crossbowman":10, "Pikeman":10,"Knight":0,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":0, "Pikeman":20,"Knight":20,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10},
     {"Crossbowman":20, "Pikeman":0,"Knight":20,"startLine":50,"startCol":40,"armyDistance":10,"unitPerCol":10}, 
    
     {"Crossbowman":60, "Pikeman":20,"Knight":20,"startLine":50,"startCol":50,"armyDistance":40,"unitPerCol":10},
     
-    {"Crossbowman":60, "Pikeman":60,"Knight":60,"startLine":40,"startCol":40,"armyDistance":15,"unitPerCol":20},
+    {"Crossbowman":6, "Pikeman":6,"Knight":6,"startLine":40,"startCol":40,"armyDistance":15,"unitPerCol":20},
     
     {"Crossbowman":100, "Pikeman":100,"Knight":100,"startLine":40,"startCol":20,"armyDistance":20,"unitPerCol":30},
     

@@ -363,6 +363,10 @@ def create_strategy(name):
     ValueError
         If the strategy cannot be found or the import fails.
     """
+    if name is None:
+        # On définit une stratégie par défaut au cas où
+        print("Attention: iaName est None, utilisation de 'RandomStrategy' par défaut.")
+        name = "Daft"
     try:
         mod = importlib.import_module(f"iastrategy.{name}")
         cls = getattr(mod, name)

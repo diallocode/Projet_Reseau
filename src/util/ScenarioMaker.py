@@ -9,10 +9,12 @@ class ScenarioMaker:
         self.scenario = scenario
         self.iaName = iaName
         self.player_id = player_id
+        print(f"ScenarioMaker initialized for Player {player_id} with IA Strategy '{iaName}' and scenario: {scenario}")
         self.network_data = {
             "type": "handshake",
             "player_id": self.player_id,
-            "units": []
+            "units": [],
+            "ia_strategy": self.iaName
         }
         self.units_factory = UnitsFactory()
         self.all_units  = {}
@@ -25,6 +27,10 @@ class ScenarioMaker:
         #self.network_manager.send_to_c(self.network_data)
 
     def create_positions(self):
+
+        #Vérifier la nature des données de scénario pour éviter de faire crasher le jeu 
+        if not all(k in self.scenario for k in ["startLine", "startCol", "unitPerCol", "armyDistance"]) or type(self.scenario["startLine"]) != int or type(self.scenario["startCol"]) != int or type(self.scenario["unitPerCol"]) != int or type(self.scenario["armyDistance"]) != int:
+            raise ValueError("Le scénario doit contenir les clés 'startLine', 'startCol', 'unitPerCol' et 'armyDistance' avec des valeurs entières.")
         start_line = self.scenario["startLine"]
         start_col = self.scenario["startCol"]
         unit_per_col = self.scenario["unitPerCol"]
