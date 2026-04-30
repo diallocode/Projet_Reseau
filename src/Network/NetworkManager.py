@@ -33,7 +33,7 @@ class NetworkManager:
 
     def wait_initialization(self):
         print("Initialisation locale de l'ID joueur...")
-        """try:
+        try:
             # 1. Tentative de récupération du PID
             id_joueur = os.getpid()
             
@@ -54,8 +54,8 @@ class NetworkManager:
             self.my_player_id = 0 # Valeur par défaut pour éviter 'None'
         except Exception as e:
             print(f"Erreur inattendue : {e}")
-            self.my_player_id = 0"""
-        self.my_player_id = 546408
+            self.my_player_id = 0
+        
             
     def listen_for_messages(self):
         while True:

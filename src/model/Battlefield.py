@@ -408,7 +408,7 @@ class Battlefield:
         
         # On utilise la méthode existante pour les retirer proprement
         for uid in ids_to_remove:
-            self.battlefield.remove_unit(uid)
+            self.remove_unit(uid)
             
         print(f"Le Joueur {player_id} s'est retiré ! {len(ids_to_remove)} unités ont fui le champ de bataille.")
         
