@@ -5,7 +5,7 @@ import json
 from Constant import HOST, PORT
 import os
 
-MYPORT = 5003
+MYPORT = 55003
 
 class NetworkManager:
     def __init__(self, host=HOST, port=PORT): 

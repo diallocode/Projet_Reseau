@@ -73,6 +73,12 @@ int main(int argc, char *argv[]) {
         network_cleanup();
         exit(1);
     }
+    int opt = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)) < 0) {
+        perror("setsockopt(SO_REUSEADDR) failed");
+    }
+
+     
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -91,7 +97,8 @@ int main(int argc, char *argv[]) {
     printf("Processus C en écoute pour Python sur 127.0.0.1:%d\n", port_python_recv);
     
     // Socket réseau avec port dynamique
-    SOCKET_T reseau_fd = initialiser_ma_connexion(); 
+   SOCKET_T reseau_fd = initialiser_ma_connexion(); 
+    fflush(stdout);
     if (reseau_fd == INVALID_SOCKET_T) {
         network_cleanup();
         exit(1); 
