@@ -136,7 +136,9 @@ class Battlefield:
             return []
 
         # On utilise notre nouvel attribut réseau !
-        my_owner = getattr(unit, 'network_owner', unit.id // 1000)
+        my_owner = unit.id // 1000  # ID du joueur propriétaire 
+        
+        
         enemies = []
 
         for target_id, target_unit in self.troupes.items():
@@ -146,15 +148,16 @@ class Battlefield:
             if target_unit.id // 1000 == my_owner:
                 continue  # Skip units from the same player
 
-            #target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
-
+            target_owner = target_unit.id // 1000
+            
+           
             # Résolution diplomatique
             # Par défaut, dans un jeu de guerre sauvage, les inconnus sont des ennemis
             relationship = "enemy" 
             
             # Si on a défini une relation spécifique avec ce joueur, on l'applique
-            #if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
-            #    relationship = self.diplomacy[my_owner][target_owner]
+            if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
+                relationship = self.diplomacy[my_owner][target_owner]
 
             # Si c'est bien un ennemi, on l'ajoute à la liste des cibles
             if relationship == "enemy":
@@ -176,6 +179,7 @@ class Battlefield:
             if dist <= radius:
                 nearby.append(e)
         return nearby
+    
 
 
     # ==========================================================
