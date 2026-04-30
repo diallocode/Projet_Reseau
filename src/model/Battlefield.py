@@ -45,7 +45,24 @@ class Battlefield:
         """Définit la relation (ex: alliance) entre deux joueurs."""
         if player1_id not in self.diplomacy:
             self.diplomacy[player1_id] = {}
+        if player2_id not in self.diplomacy:
+            self.diplomacy[player2_id] = {}
         self.diplomacy[player1_id][player2_id] = relationship
+        self.diplomacy[player2_id][player1_id] = relationship
+        
+    def _handle_alliance(self,msg):
+        player_id = msg.get("player_id")
+        ally_id = msg.get("ally_id")
+        #print(f"[DEBUG Alliance] player_id={player_id}, ally_id={ally_id}")
+        self.set_relationship(player_id, ally_id, "ally")
+        #print(f"[DEBUG Diplomacy] {self.diplomacy}")
+        
+    def _handle_alliance(self,msg):
+        player_id = msg.get("player_id")
+        ally_id = msg.get("ally_id")
+        #print(f"[DEBUG Alliance] player_id={player_id}, ally_id={ally_id}")
+        self.set_relationship(player_id, ally_id, "ally")
+        #print(f"[DEBUG Diplomacy] {self.diplomacy}")
 
     # ==========================================================
     #                   UNIT MANAGEMENT

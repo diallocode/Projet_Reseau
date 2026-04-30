@@ -1,6 +1,7 @@
 #include "diffusion.h"
 #include "cJSON.h"
 #include "connexion_multi.h"
+#include <unistd.h>
 
 // Le point de départ de ta file d'attente
 NoeudAttente *file_attente = NULL;
@@ -224,6 +225,16 @@ char *diffusion_message_sens2(int reseau_fd){
                 free(Buffer);
                 return json_nouveau_recu;
             }
+            case 7: /* ALLIANCE */
+                printf("[ALLIANCE] Message alliance reçu !\n");
+                {
+                    char *json_alliance_recu = malloc(taille_json + 1);
+                    if (!json_alliance_recu) { free(Buffer); return NULL; }
+                    memcpy(json_alliance_recu, Buffer + sizeof(EnteteUDP), taille_json);
+                    json_alliance_recu[taille_json] = '\0';
+                    free(Buffer);
+                    return json_alliance_recu;
+                }
 
         default:
             printf("[ALERTE] Type de message inconnu reçu.\n");

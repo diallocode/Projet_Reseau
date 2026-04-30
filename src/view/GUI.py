@@ -150,8 +150,7 @@ class GUI(View):
         for unit in self.battlefield.troupes.values():
             color =DARK
 
-            # Use unit ID to determine team color
-            color = RED if unit.id // 1000 == self.generaux[0].id else BLUE
+            color = RED if self._is_ally(unit) else BLUE
 
             if not unit.is_alive():
                 continue
@@ -334,31 +333,7 @@ class GUI(View):
 
 
     def draw_camera_view(self):
-        """
-        Renders the visible portion of the battlefield using a camera-based view.
-
-        This method implements a strict camera system similar to RTS games:
-        - Only the area of the map currently covered by the camera is rendered.
-        - The camera view is defined by the zoom factor and the screen size.
-        - The background is cropped to the camera rectangle before being scaled.
-        - Units are rendered only if they are inside the camera's field of view.
-        - The final camera surface is scaled to fill the entire screen.
-
-        The method also clamps the camera position to ensure it never moves
-        outside the bounds of the map, preventing any visual artifacts such
-        as black borders or static background areas.
-
-        Additionally, the camera capture coordinates and dimensions are updated
-        for synchronization with the minimap rendering.
-
-        Rendering steps:
-            1. Compute the camera capture size based on zoom factor.
-            2. Clamp camera position within map boundaries.
-            3. Crop the background to the camera rectangle.
-            4. Draw visible units relative to the camera.
-            5. Scale the camera view to screen resolution.
-            6. Update minimap capture variables.
-        """
+        
         capture_w = int(self.screen_w / self.zoom_factor)
         capture_h = int(self.screen_h / self.zoom_factor)
 
@@ -392,7 +367,7 @@ class GUI(View):
                 rel_x = ux - self.zoom_x
                 rel_y = uy - self.zoom_y
 
-                id = 1 if unit.id // 1000 == self.generaux[0].id else 2
+                id = 1 if self._is_ally(unit) else 2
 
                 key = f"{unit.name}_{id}"
                 if key in self.unit_images:
@@ -535,3 +510,12 @@ class GUI(View):
         self.winner = winner_name
         self.pause = True
 
+    def _is_ally(self, unit) -> bool:
+        owner = unit.id // 1000
+        local_id = self.generaux[0].id
+        if owner == local_id:
+            return True
+        diplo = self.battlefield.diplomacy
+        return (local_id in diplo and 
+                owner in diplo[local_id] and 
+                diplo[local_id][owner] == "ally")

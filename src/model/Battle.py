@@ -76,6 +76,10 @@ class Battle:
                         self.battlefield._handle_property_answer(msg, self.general)
                     elif msg["type"] == "property_request":
                         self.battlefield._handle_property_request(msg, self.general)
+                    elif msg["type"] == "alliance":
+                        print(f"Alliance entre {msg['player_id']} et {msg['ally_id']}")
+                        print(f"Msg content: {msg}")
+                        self.battlefield._handle_alliance(msg)
                         
                     else:
                         print(f"Message inconnu reçu : {msg}")

@@ -58,6 +58,36 @@ void envoyer_demande_pairs(int reseau_fd, struct sockaddr_in addr_pair) {
     }
 }
 
+// Fonction pour les alliances
+void envoyer_alliance(int reseau_fd, uint32_t mon_id, uint32_t id_allie) {
+    char json_alliance[128];
+    sprintf(json_alliance,
+            "{\"type\":\"alliance\",\"player_id\":%u,\"ally_id\":%u}",
+            mon_id, id_allie);
+
+    EnteteUDP env;
+    memset(&env, 0, sizeof(env));
+    env.taille_payload = htons(strlen(json_alliance));
+    env.type_message = 7;
+    env.id_expediteur = mon_id;
+    env.num_sequence = 0;
+
+    int taille = strlen(json_alliance) + sizeof(EnteteUDP);
+    char *buf = malloc(taille);
+    if (buf == NULL) return;
+    memcpy(buf, &env, sizeof(EnteteUDP));
+    memcpy(buf + sizeof(EnteteUDP), json_alliance, strlen(json_alliance));
+
+    int nb_pairs = 0;
+    struct paire *pairs = get_connected_peers(&nb_pairs);
+    for (int i = 0; i < nb_pairs; i++) {
+        sendto(reseau_fd, buf, taille, 0,
+               (struct sockaddr*)&pairs[i].addr, sizeof(pairs[i].addr));
+        printf("[ALLIANCE] Envoyé à %s\n", inet_ntoa(pairs[i].addr.sin_addr));
+    }
+    free(buf);
+}
+
 int main(int argc, char *argv[]) {
 
     int mon_port         = (argc > 1) ? atoi(argv[1]) : 5002;
@@ -105,6 +135,8 @@ int main(int argc, char *argv[]) {
 
     afficher_mes_ips();
 
+    uint32_t id_allie_en_attente = 0; 
+
     printf("Voulez-vous rejoindre une partie existante ? (o/n) : ");
     char reponse[4];
     fgets(reponse, sizeof(reponse), stdin);
@@ -124,8 +156,20 @@ int main(int argc, char *argv[]) {
         add_peer_if_new(addr_pair);
         printf("[INFO] Pair %s:5002 ajouté au carnet.\n", ip_pair);
 
-        // NOUVEAU : demander la liste des pairs à A
+        // Demander la liste des pairs
         envoyer_demande_pairs(reseau_fd, addr_pair);
+
+        // Demander si le joueur veut créer une alliance
+        printf("Voulez-vous créer une alliance ? (o/n) : ");
+        char rep_alliance[4];
+        fgets(rep_alliance, sizeof(rep_alliance), stdin);
+        if (rep_alliance[0] == 'o' || rep_alliance[0] == 'O') {
+            printf("Entrez l'ID du joueur allié : ");
+            char id_str[32];
+            fgets(id_str, sizeof(id_str), stdin);
+            id_allie_en_attente = (uint32_t)atoi(id_str);
+            printf("[ALLIANCE] Alliance avec %u sera envoyée au démarrage.\n", id_allie_en_attente);
+        }
 
     } else {
         printf("[INFO] Vous êtes le joueur 1.\n");
@@ -134,6 +178,8 @@ int main(int argc, char *argv[]) {
     printf("Processus C prêt !\n");
 
     long dernier_ping_envoye = get_time();
+
+    printf("Processus C prêt ! En attente du message connected de Python...\n");
 
     while(1){
         fd_set fds;
@@ -166,11 +212,12 @@ int main(int argc, char *argv[]) {
                     cJSON *type_item = cJSON_GetObjectItemCaseSensitive(json, "type");
                   
                     if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "connected") == 0) {
-                        // Python nous donne son ID
+                        // Python nous donne son ID → on configure notre ID uniquement
                         cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
                         if (cJSON_IsNumber(id_item)) {
                             set_mon_id((uint32_t)id_item->valueint);
                             printf("[SYSTÈME] Mon ID configuré : %d\n", id_item->valueint);
+                            // L'alliance ne se déclenche PAS ici (trop tôt, les pairs ne sont pas encore connectés)
                         }
                     } else {
                         // Sauvegarder le handshake pour pouvoir le renvoyer aux nouveaux pairs
@@ -178,6 +225,37 @@ int main(int argc, char *argv[]) {
                             strncpy(dernier_handshake, buffer, sizeof(dernier_handshake) - 1);
                             printf("[SAUVEGARDE] Handshake local sauvegardé.\n");
                         }
+
+                  
+                        // DÉCLENCHEMENT DE L'ALLIANCE sur handshake
+                       
+                        
+                        
+                        if (cJSON_IsString(type_item) && strcmp(type_item->valuestring, "handshake") == 0) {
+                            if (id_allie_en_attente > 0) {
+                                cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json, "player_id");
+                                if (cJSON_IsNumber(id_item)) {
+                                    uint32_t mon_id = (uint32_t)id_item->valueint;
+                                    printf("[ALLIANCE] Déclenchement alliance vers joueur %u\n", id_allie_en_attente);
+
+                                    // 1. Envoyer l'alliance aux pairs sur le réseau
+                                    envoyer_alliance(reseau_fd, mon_id, id_allie_en_attente);
+
+                                    // 2. Notifier aussi Python local 
+                                    char json_self[128];
+                                    sprintf(json_self,
+                                        "{\"type\":\"alliance\",\"player_id\":%u,\"ally_id\":%u}",
+                                        mon_id, id_allie_en_attente);
+                                    sendto(sock, json_self, strlen(json_self), 0,
+                                           (struct sockaddr*)&python_send_addr,
+                                           sizeof(python_send_addr));
+                                    printf("[ALLIANCE] Notifié Python local de l'alliance\n");
+
+                                    id_allie_en_attente = 0;
+                                }
+                            }
+                        }
+
                         // Diffusion normale sur le réseau
                         uint32_t type_message = obtenir_type_message(buffer);
                         diffusion_message_sens1(buffer, reseau_fd, type_message);
@@ -249,6 +327,20 @@ int main(int argc, char *argv[]) {
                         free(json_propre);
                         json_propre = NULL;
 
+                    } else if (type_item != NULL && strcmp(type_item->valuestring, "alliance") == 0) {
+                        printf("[ALLIANCE] Reçu → transmis à Python\n");
+                        int ret_alliance = sendto(sock, json_propre, strlen(json_propre), 0,
+                                                  (struct sockaddr*)&python_send_addr,
+                                                  sizeof(python_send_addr));
+                        if (ret_alliance < 0) {
+                            perror("[ALLIANCE] Erreur envoi vers Python");
+                        } else {
+                            printf("[ALLIANCE] Transmis à Python (%d octets)\n", ret_alliance);
+                        }
+                        cJSON_Delete(msg);
+                        free(json_propre);
+                        json_propre = NULL;
+
                     } else {
                         // Message normal → transmettre à Python
                         int ret = sendto(sock, json_propre, strlen(json_propre), 0,
@@ -287,8 +379,10 @@ int main(int argc, char *argv[]) {
 
         // Gestion des déconnexions 
         struct sockaddr_in addr_fantome;
-        int id_deconnecte = check_and_get_inactive_paire(10, &addr_fantome);
+
+        int id_deconnecte = check_and_get_inactive_paire(60, &addr_fantome);
         if (id_deconnecte != -1) {
+
             printf("[ALERTE] Le joueur ID %d déconnecté pour inactivité.\n", id_deconnecte);
             disconnect_paire_by_addr(addr_fantome);
             nettoyer_file_joueur_parti(addr_fantome);
