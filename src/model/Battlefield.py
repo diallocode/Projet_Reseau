@@ -495,7 +495,7 @@ class Battlefield:
                 unit.hp = 0
                 unit.current_order = None
                 unit.target_unit = None            
-                self.network_manager.push_network_event({
+                self.push_network_event({
                     "type": "update",
                     "id": unit.id,
                     "hp": unit.hp,
@@ -517,7 +517,7 @@ class Battlefield:
                 unit.hp = 0
                 unit.current_order = None
                 unit.target_unit = None            
-                self.network_manager.push_network_event({
+                self.push_network_event({
                     "type": "update",
                     "id": unit.id,
                     "hp": unit.hp,
