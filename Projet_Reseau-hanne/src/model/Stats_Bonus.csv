@@ -1,0 +1,15 @@
+attacker,defender,bonus_damage,bonus_armor
+Knight,Pikeman,0,22
+Knight,Crossbowman,0,0
+Knight,Knight,0,0
+Pikeman,Knight,22,0
+Pikeman,Camel,18,0
+Pikeman,War Elephant,25,0
+Pikeman,Battle Elephant,15,0
+Pikeman,Crossbowman,0,3
+Pikeman,Skirmisher,0,4
+Pikeman,Pikeman,0,0
+Crossbowman,Pikeman,3,0
+Crossbowman,Knight,0,2
+Crossbowman,Skirmisher,-3,6
+Crossbowman,Crossbowman,0,0

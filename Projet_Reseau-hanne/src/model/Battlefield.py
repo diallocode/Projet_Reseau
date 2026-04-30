@@ -1,0 +1,611 @@
+import math
+import random
+from Constant import UNIT_RADIUS
+from Network.NetworkManager import NetworkManager
+from model.General import General
+
+class Battlefield:
+    """
+    Continuous Real-Time Battlefield Simulation.
+
+    Attributes
+    ----------
+    width : float
+        The battlefield width (horizontal size).
+    height : float
+        The battlefield height (vertical size).
+    troupes : dict
+        Dictionnaire mapping army_id -> Army.
+    """
+
+    def __init__(self, width: float, height: float, troupes: dict, network_manager:NetworkManager, heightmap=None) -> None:
+        """
+        Initializes a continuous battlefield.
+
+        Parameters
+        ----------
+        width : float
+        height : float
+        troupes : dict
+            Initial mapping unit_id -> Unit.
+        """
+        if width <= 0 or height <= 0:
+            raise ValueError("Width and height must be positive.")
+
+       
+        self.troupes = {}           # Dictionary will contains id:Unit
+        self.width = width
+        self.height = height
+        self.heightmap = heightmap
+        self.create_troupe(troupes)
+        self.network_manager = network_manager
+        self.diplomacy = {}         # New attribute for diplomacy management
+
+    def set_relationship(self, player1_id, player2_id, relationship):
+        """Définit la relation (ex: alliance) entre deux joueurs."""
+        if player1_id not in self.diplomacy:
+            self.diplomacy[player1_id] = {}
+        self.diplomacy[player1_id][player2_id] = relationship
+
+    # ==========================================================
+    #                   UNIT MANAGEMENT
+    # ==========================================================
+    def create_troupe(self, units_dict):
+        """
+        Add unit in unit dictionary
+        """
+        if not isinstance(units_dict, dict):
+            raise ValueError("units_dict should be a dictionary {id: unit_obj}")
+
+        # Fast update of dictionary
+        self.troupes.update(units_dict)
+
+        # Link the battlefield and check unit positions
+        for unit_id, unit in units_dict.items():
+            unit.battlefield = self
+            self.check_unit_position(unit)
+
+
+    def check_unit_position(self, unit):
+        """
+        Check unit position
+        """
+        if unit.position is not None:
+            if not self.is_valid_position(unit.position):
+                print(f"Battlefield size: width={self.width}, height={self.height}")
+                raise ValueError(f"Invalid position {unit.position} for unit {unit}")
+
+
+    def remove_unit(self, unit_id):
+        """ Remove unit via its id """
+        if unit_id in self.troupes:
+            self.troupes[unit_id].position = None
+            del self.troupes[unit_id]
+
+    def get_unit_at(self, position):
+        for unit in self.troupes.values():
+            if not unit.is_alive():
+                continue
+            if unit.position is None:
+                continue
+            if math.dist(unit.position, position) <= UNIT_RADIUS*2:
+                return unit
+        return None
+    # ==========================================================
+    #                   POSITION MANAGEMENT
+    # ==========================================================
+    def is_valid_position(self, position):
+        x, y = position
+        # x is horizontal coordinate -> compare with width
+        # y is vertical coordinate -> compare with height
+        return 0.0 <= x < self.width and 0.0 <= y < self.height
+
+    # prevention of exits from the battlefield
+    def clamp_position(self, position):
+        x, y = position
+        x = max(0.0, min(self.width - 0.001, x))
+        y = max(0.0, min(self.height - 0.001, y))
+        return (x, y)
+
+    # ==========================================================
+    #                   UNIT INTERACTIONS
+    # ==========================================================
+    def get_enemy_units(self, unit):
+        """
+        Retourne la liste des ennemis en fonction de l'appartenance réseau
+        et des alliances diplomatiques en cours.
+        """
+        if unit is None:
+            return []
+
+        # On utilise notre nouvel attribut réseau !
+        my_owner = getattr(unit, 'network_owner', unit.id // 1000)
+        enemies = []
+
+        for target_id, target_unit in self.troupes.items():
+            if not target_unit.is_alive():
+                continue
+            
+            if target_unit.id // 1000 == my_owner:
+                continue  # Skip units from the same player
+
+            #target_owner = getattr(target_unit, 'network_owner', target_id // 1000)
+
+            # Résolution diplomatique
+            # Par défaut, dans un jeu de guerre sauvage, les inconnus sont des ennemis
+            relationship = "enemy" 
+            
+            # Si on a défini une relation spécifique avec ce joueur, on l'applique
+            #if my_owner in self.diplomacy and target_owner in self.diplomacy[my_owner]:
+            #    relationship = self.diplomacy[my_owner][target_owner]
+
+            # Si c'est bien un ennemi, on l'ajoute à la liste des cibles
+            if relationship == "enemy":
+                enemies.append(target_unit)
+
+        return enemies
+
+
+    def find_nearby_enemies(self, unit, radius):
+        enemies = self.get_enemy_units(unit)
+        nearby = []
+        if not unit.position:
+            return nearby
+
+        for e in enemies:
+            if not e.position:
+                continue
+            dist = math.dist(unit.position, e.position)     # distance 
+            if dist <= radius:
+                nearby.append(e)
+        return nearby
+
+
+    # ==========================================================
+    #                   UPDATE CYCLE
+    # ==========================================================
+    def _update_single_unit(self, unit, general, dt):
+        if not unit.is_alive():
+            unit.network_locked = False
+            return True
+
+        # Si l'unité n'appartient pas au général local et n'est pas déjà verrouillée
+        if unit.network_owner != general.id and not unit.network_locked:
+            
+            if unit.current_order == "move":
+                message = { 
+                    "type": "property_request",
+                    "unit_id": unit.id,
+                    "actuel_owner": unit.network_owner,
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner": None,
+                    "target_unit_id": None,
+                    "dest_x": unit.target_pos[0],
+                    "dest_y": unit.target_pos[1],
+                    "action": "move",
+                    "damage": 0
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
+                
+            elif unit.current_order == "attack":
+                message = { 
+                    "type": "property_request",
+                    "unit_id": unit.id,
+                    "actual_owner": unit.network_owner,
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner": unit.target_unit.network_owner if unit.target_unit else None,
+                    "target_unit_id": unit.target_unit.id if unit.target_unit else None,
+                    "dest_x": unit.target_pos[0],
+                    "dest_y": unit.target_pos[1],
+                    "action": "info",
+                    "damage": unit.compute_damage(unit, unit.target_unit) if unit.target_unit else 0
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
+
+        unit.update(dt)
+        
+        if unit.position:
+            unit.position = self.clamp_position(unit.position)
+            
+        return not unit.is_alive()
+
+    # More nested list paths general->army->units
+    def update(self,general, dt):
+        """
+        Met à jour toutes les unités directement depuis le dictionnaire.
+        """
+        # List of units for random mixing
+        all_units = general.get_my_units(self)
+
+        ids_to_remove = []
+        for unit in all_units:
+            if unit.is_alive():
+                is_dead = self._update_single_unit(unit, general, dt)
+                if is_dead:
+                    ids_to_remove.append(unit.id)
+            else:
+                ids_to_remove.append(unit.id)
+
+        # Cleaning
+        for uid in ids_to_remove:
+            self.remove_unit(uid)
+
+    # ==========================================================
+    #                   MAINTENANCE METHODS
+    # ==========================================================
+    def resetBattlefield(self):
+        """ Clear all troup and position """
+        for unit in self.troupes.values():
+            unit.position = None
+        self.troupes = {}
+
+    # ==========================================================
+    #                   REPRESENTATION
+    # ==========================================================
+    def __repr__(self):
+        return f"Battlefield {self.width:.1f}x{self.height:.1f} with {len(self.troupes)} armies"
+
+
+    # ==========================================================
+    #                   ELEVATION
+    # ==========================================================
+    def get_height(self, x, y):
+        if not self.heightmap:
+            return 0
+
+        x = max(0, min(self.width - 1, x))
+        y = max(0, min(self.height - 1, y))
+
+        x0 = int(math.floor(x))
+        y0 = int(math.floor(y))
+        x1 = min(x0 + 1, self.width - 1)
+        y1 = min(y0 + 1, self.height - 1)
+
+        dx = x - x0
+        dy = y - y0
+
+        h00 = self.heightmap[y0][x0]
+        h10 = self.heightmap[y0][x1]
+        h01 = self.heightmap[y1][x0]
+        h11 = self.heightmap[y1][x1]
+
+        h0 = h00 * (1 - dx) + h10 * dx
+        h1 = h01 * (1 - dx) + h11 * dx
+        return h0 * (1 - dy) + h1 * dy
+
+
+    # ==========================================================
+    #                   COLLISION
+    # ==========================================================
+    def is_position_free(self, unit, pos):
+        for other in self.troupes.values():
+            if other is unit:
+                continue
+            if not other.is_alive():
+                continue
+
+            dx = pos[0] - other.position[0]
+            dy = pos[1] - other.position[1]
+            if math.hypot(dx, dy) < UNIT_RADIUS*2:
+                return False
+        return True
+
+    def informe_battlefield_state(self, general:General):
+        """
+        Envoie l'état actuel du champ de bataille au processus C pour synchronisation.
+        """
+        units_data = []
+        for unit in self.troupes.values():
+            if unit.position is None or not unit.is_alive():
+                continue
+            if unit.id // 1000 != general.id:  # Si ce n'est pas une unité du joueur local, on l'ignore
+                continue  # On n'envoie que nos unités pour éviter les conflits de données
+            units_data.append({
+                "id": unit.id,
+                "type": unit.name,
+                "x": unit.position[0],
+                "y": unit.position[1],
+                "hp": unit.hp,
+                "network_owner": general.id
+            })
+
+        message = {
+            "type": "acknowledgment",
+            "player_id": general.id,
+            "units": units_data
+        }
+        self.network_manager.send_to_c(message)
+    
+    def _handle_new_player(self, data, general):
+        """
+        Intègre l'armée d'un nouvel arrivant sur la carte locale.
+        data ressemble à : {"type": "handshake", "player_id": 2, "units": [...]}
+        """
+        
+        "Supprimer tous les unités de ce joueur s'il existe déjà (cas de reconnexion)"
+        units = self.troupes.values()
+        for unit in list(units):  # list() pour éviter la modification pendant l'itération
+            if getattr(unit, 'network_owner', -1) == data["player_id"]:
+                self.remove_unit(unit.id)
+        
+        player_id = data["player_id"]
+        remote_units = data["units"]
+        from util.UnitsFactory import UnitsFactory
+
+        factory = UnitsFactory()
+
+        for u_data in remote_units:
+            unit_id = u_data["id"] 
+            unit_type = u_data["type"]
+            
+            # Création de l'unité
+            new_unit = factory.create_unit(unit_id, unit_type)
+            print(f"Création de l'unité {unit_id} de type {unit_type} pour le joueur {player_id}")
+            
+            # Forçage de l'état réseau
+            new_unit.position = (u_data["x"], u_data["y"])
+            new_unit.hp = u_data["hp"]
+            new_unit.network_owner = player_id 
+            new_unit.battlefield = self
+            
+            # Ajout au champ de bataille (risque de collision)
+            self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
+        print(f"L'armée du joueur {player_id} a rejoint la bataille !")
+        self.informe_battlefield_state(general)
+        
+    def _handle_acknowledgment(self, data):
+       
+        
+        "Supprimer tous les unités de ce joueur s'il existe déjà (cas de reconnexion)"
+        units = self.troupes.values()
+        for unit in list(units):  # list() pour éviter la modification pendant l'itération
+            if getattr(unit, 'network_owner', -1) == data["player_id"]:
+                self.remove_unit(unit.id)
+        
+        player_id = data["player_id"]
+        remote_units = data["units"]
+        from util.UnitsFactory import UnitsFactory
+
+        factory = UnitsFactory()
+
+        for u_data in remote_units:
+            unit_id = u_data["id"] 
+            unit_type = u_data["type"]
+            
+            # Création de l'unité
+            new_unit = factory.create_unit(unit_id, unit_type)
+            print(f"Création de l'unité {unit_id} de type {unit_type} pour le joueur {player_id}")
+            
+            # Forçage de l'état réseau
+            new_unit.position = (u_data["x"], u_data["y"])
+            new_unit.hp = u_data["hp"]
+            new_unit.network_owner = player_id 
+            new_unit.battlefield = self
+            
+            # Ajout au champ de bataille (risque de collision)
+            self.troupes[unit_id] = new_unit
+        print(f"Troupes après intégration du joueur {player_id}: {len(self.troupes)} unités sur le champ de bataille.")
+        "afficher l'état de troupes pour debug"
+        for uid, unit in self.troupes.items():
+            print(f"Unité ID {uid}: Type {unit.name}, Position {unit.position}, HP {unit.hp}, Owner {getattr(unit, 'network_owner', 'Unknown')}")
+        print(f"L'armée du joueur {player_id} a rejoint la bataille !")
+        
+        
+    def _handle_disconnect(self, data):
+        """
+        Nettoie le champ de bataille lorsqu'un joueur se déconnecte.
+        """
+        player_id = data["player_id"]
+        
+      
+        ids_to_remove = [
+            uid for uid, unit in self.battlefield.troupes.items() 
+            if getattr(unit, 'network_owner', -1) == player_id
+        ]
+        
+        # On utilise la méthode existante pour les retirer proprement
+        for uid in ids_to_remove:
+            self.battlefield.remove_unit(uid)
+            
+        print(f"Le Joueur {player_id} s'est retiré ! {len(ids_to_remove)} unités ont fui le champ de bataille.")
+        
+        
+    def _handle_unit_update(self, msg):
+        """
+        Met à jour l'état d'une unité sur la carte locale à partir d'un message réseau.
+        Format attendu : {"type": "update", "id": 2010, "hp": 45, "network_owner": 1, "x": 50.5, "y": 42.0}
+        """
+        unit_id = msg.get("id")
+
+        # Vérification de sécurité : l'unité existe-t-elle sur notre carte ?
+        if unit_id not in self.troupes:
+            # Optionnel : Tu peux décommenter le print pour débugger
+            # print(f"[Réseau] Ignoré : Mise à jour pour l'unité inconnue ou morte ID {unit_id}")
+            return
+
+        # Récupération de l'unité cible
+        unit = self.troupes[unit_id]
+
+        # Mise à jour des valeurs (avec fallback sur les valeurs actuelles si manquantes)
+        if "hp" in msg:
+            unit.hp = msg["hp"]
+        
+        if "network_owner" in msg:
+            unit.network_owner = msg["network_owner"]
+            
+        if "x" in msg and "y" in msg:
+            unit.position = (msg["x"], msg["y"])
+
+        # Nettoyage immédiat si le réseau nous informe de sa mort
+        if unit.hp <= 0:
+            unit.hp = 0
+            # On purge ses ordres pour qu'elle arrête de bouger/attaquer instantanément
+            unit.current_order = None
+            unit.target_unit = None            
+            self.remove_unit(unit_id)
+    
+    def push_network_event(self, event_data):
+        print(f"Préparation d'un événement réseau : {event_data}")
+        self.network_manager.send_to_c(event_data)
+        
+    def _handle_property_answer(self, msg, general):
+        """
+        Format de réponse attendu : 
+            {
+                type:property_answer, 
+                unit_id:2,
+                target_unit_id:54, 
+                actuel_owner: 545, (celui a qui ont cède : ask_property_owner de la requête)
+                hp:45,
+                x:45, 
+                y:45, 
+                action:attack/move/info, 
+                dest_x:45, 
+                dest_y:54,
+                damage:14, 
+            }
+        """
+        unit_id= msg.get("unit_id")
+        if unit_id not in self.troupes:
+            return
+        unit = self.troupes[unit_id]
+        if msg.get("actuel_owner") != general.id:
+            print(f"Réponse de propriété pour unité non contrôlée ID {unit_id} (appartient à {msg.get('actuel_owner')})")
+            return
+        
+        unit.network_owner = general.id   
+        unit.hp = msg["hp"]
+
+        if unit.hp <= 0:
+            unit.current_order = None
+            unit.target_unit = None
+            self.remove_unit(unit_id)
+            return
+        
+        unit.position = (msg["x"], msg["y"])
+        
+        action = msg.get("action")
+        
+        if action == "attack":  
+            unit.hp -= msg.get("damage")
+            if unit.hp <= 0:
+                unit.hp = 0
+                unit.current_order = None
+                unit.target_unit = None            
+                self.network_manager.push_network_event({
+                    "type": "update",
+                    "id": unit.id,
+                    "hp": unit.hp,
+                    "network_owner": unit.network_owner,
+                    "x": unit.position[0],
+                    "y": unit.position[1]
+                })
+                self.remove_unit(unit_id)
+      
+        elif action == "move":
+            dest_x = msg.get("dest_x")
+            dest_y = msg.get("dest_y")
+            unit.current_order = "move"
+            unit.target_pos = (dest_x, dest_y)
+            unit.update(0)  # Mise à jour immédiate pour appliquer la nouvelle position
+            
+        elif action == "info":
+            if unit.hp <= 0:
+                unit.hp = 0
+                unit.current_order = None
+                unit.target_unit = None            
+                self.network_manager.push_network_event({
+                    "type": "update",
+                    "id": unit.id,
+                    "hp": unit.hp,
+                    "network_owner": unit.network_owner,
+                    "x": unit.position[0],
+                    "y": unit.position[1]
+                })
+                self.remove_unit(unit_id)
+                return
+            else:
+                message = { 
+                    "type": "property_request",
+                    "unit_id": msg.get("target_unit_id"),
+                    "actual_owner": msg.get("target_unit_actuel_owner"),
+                    "ask_property_owner": general.id,
+                    "target_unit_actual_owner":  None,
+                    "target_unit_id":None,
+                    "dest_x": msg.get("dest_x"),
+                    "dest_y": msg.get("dest_y"),
+                    "action": "attack",
+                    "damage": msg.get("damage")
+                }
+                self.network_manager.send_to_c(message)
+                unit.network_locked = True
+        else:
+            print(f"Action inconnue dans property_answer : {action}")
+
+    def _handle_property_request(self,msg, general):
+        """
+            Handle property request from C process. 
+            Format attendu : 
+            {
+                type: property_request, 
+                unit_id:2, 
+                target_unit_id : 14, 
+                actual_owner:1215, 
+                target_unit_actuel_owner: 545, 
+                ask_property_owner: 045, 
+                action: attack/move/info, 
+                dest_x:45, 
+                dest_y:54, 
+                damage:14
+            }
+            
+            Format de réponse attendu : 
+            {
+                type:property_answer, 
+                unit_id:2,
+                target_unit_id:54, 
+                actuel_owner: 545, (celui a qui ont cède : ask_property_owner de la requête)
+                hp:45,
+                x:45, 
+                y:45, 
+                action:attack/move/info, 
+                dest_x:45, 
+                dest_y:54,
+                damage:14, 
+            }
+        """
+        unit_id = msg.get("unit_id")
+        
+        if unit_id not in self.troupes:
+            print(f"Requête de propriété pour unité inconnue ID {unit_id}")
+            return
+        
+        unit = self.troupes[unit_id]
+        
+        if unit.network_owner != general.id:
+            print(f"Requête de propriété pour unité non contrôlée ID {unit_id} (appartient à {unit.network_owner})")
+            return
+        
+        unit.network_owner = msg.get("ask_property_owner", unit.network_owner)  # Transfert de propriété temporaire pour la requête
+        
+        response = {
+            "type": "property_answer",
+            "unit_id": unit_id,
+            "target_unit_id": msg.get("target_unit_id"),
+            "actuel_owner": unit.network_owner,
+            "hp": unit.hp,
+            "x": unit.position[0] if unit.position else None,
+            "y": unit.position[1] if unit.position else None,
+            "action": msg.get("action"),
+            "dest_x": msg.get("dest_x"),
+            "dest_y": msg.get("dest_y"),
+            "damage": msg.get("damage")
+        }
+        
+        self.push_network_event(response)
+        
+            
+        
