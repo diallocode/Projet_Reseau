@@ -24,7 +24,7 @@ What to expect:
 
 In a new terminal, launch the Python client to start the game.
 
-# Ensure you are in the src directory
+Ensure you are in the src directory.
 python3 Main.py run <AI_Name>
 
 What to expect:
